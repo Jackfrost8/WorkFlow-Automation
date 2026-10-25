@@ -14,6 +14,7 @@ from backend.schemas.evc import (
     EVCVisitResponse,
 )
 from backend.services.audit_service import log_audit_event
+from backend.core.time_service import get_effective_time
 
 
 def get_evc_visits(
@@ -47,7 +48,7 @@ def get_evc_visits(
         query = query.filter(EVCVisit.visit_mode == visit_mode)
 
     # 2. Status filtering (supporting 'DELAYED' pseudo-status)
-    now = datetime.now(timezone.utc)
+    now = get_effective_time(db)
     if status_filter:
         if status_filter.upper() == "DELAYED":
             query = query.filter(
@@ -245,7 +246,7 @@ def complete_evc_visit(
             detail=f"Visit is already in status '{visit.status.value}'",
         )
 
-    now = datetime.now(timezone.utc)
+    now = get_effective_time(db)
     visit.conducted_date = payload.conducted_date or now
     visit.recommendation = payload.recommendation
     visit.deficiencies = payload.deficiencies.strip() if payload.deficiencies else None

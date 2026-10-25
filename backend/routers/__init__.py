@@ -6,6 +6,7 @@ from backend.routers.evc import router as evc_router
 from backend.routers.documents import router as documents_router
 from backend.routers.undertakings import router as undertakings_router
 from backend.routers.notifications import router as notifications_router
+from backend.routers.admin_time import router as admin_time_router
 
 __all__ = [
     "health_router",
@@ -16,4 +17,5 @@ __all__ = [
     "documents_router",
     "undertakings_router",
     "notifications_router",
+    "admin_time_router",
 ]

@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from backend.core.dependencies import get_current_user
+from backend.core.time_service import get_effective_time
 from backend.database import get_db
 from backend.models.document import DocType, DocumentStatus, UndertakingDocument, VerificationStatus
 from backend.models.user import Institution, User, UserRole
@@ -103,7 +104,7 @@ def list_documents(
         query = query.filter(UndertakingDocument.verification_status == verification_status)
 
     if expiring_within_days is not None:
-        now_utc = datetime.now(timezone.utc)
+        now_utc = get_effective_time(db)
         horizon = now_utc + timedelta(days=expiring_within_days)
         query = query.filter(
             UndertakingDocument.expiry_date.isnot(None),

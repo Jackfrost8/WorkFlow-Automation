@@ -16,6 +16,7 @@ from backend.routers.evc import router as evc_router
 from backend.routers.documents import router as documents_router
 from backend.routers.undertakings import router as undertakings_router
 from backend.routers.notifications import router as notifications_router
+from backend.routers.admin_time import router as admin_time_router
 from backend.background.scheduler import start_scheduler, shutdown_scheduler
 
 settings = get_settings()
@@ -77,6 +78,9 @@ app.include_router(undertakings_router, prefix="/api")
 
 app.include_router(notifications_router, prefix=settings.API_V1_PREFIX)
 app.include_router(notifications_router, prefix="/api")
+
+app.include_router(admin_time_router, prefix=settings.API_V1_PREFIX)
+app.include_router(admin_time_router, prefix="/api")
 
 # Mount static frontend directory
 if FRONTEND_DIR.exists():

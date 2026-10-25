@@ -8,6 +8,7 @@ from backend.models.evc import EVCStatus, EVCVisit
 from backend.models.user import Institution, User, UserRole
 from backend.models.workflow import WorkflowRoute, WorkflowStage
 from backend.services.audit_service import log_audit_event
+from backend.core.time_service import get_effective_time
 from backend.workflow.config import ensure_default_workflow_routes
 
 
@@ -59,7 +60,7 @@ def submit_application(
             detail=f"Route '{route_type}' has no initial stage configured",
         )
 
-    now = datetime.now(timezone.utc)
+    now = get_effective_time(db)
     stage_deadline = now + timedelta(days=first_stage.sla_days)
     app_number = generate_application_number(db, institution)
 
@@ -180,7 +181,7 @@ def complete_stage(
             detail=f"Role '{user.role.value}' is not authorized to process stage '{curr_stage.name}'",
         )
 
-    now = datetime.now(timezone.utc)
+    now = get_effective_time(db)
 
     # Find the current active stage history entry
     active_history = (
@@ -345,7 +346,7 @@ def return_application(
             )
 
     curr_stage = application.current_stage
-    now = datetime.now(timezone.utc)
+    now = get_effective_time(db)
 
     # Close active history entry
     active_history = (

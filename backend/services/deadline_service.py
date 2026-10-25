@@ -20,6 +20,7 @@ from backend.models.undertaking import Undertaking, UndertakingStatus
 from backend.models.user import Institution, User, UserRole
 from backend.services.audit_service import log_audit_event
 from backend.services.email_service import send_email_alert
+from backend.core.time_service import get_effective_time
 
 logger = logging.getLogger("aicte.deadline_engine")
 
@@ -342,7 +343,7 @@ def check_all_deadlines(
     """
     ensure_default_deadline_rules(db)
 
-    now_utc = reference_time or datetime.now(timezone.utc)
+    now_utc = reference_time or get_effective_time(db)
     if now_utc.tzinfo is None:
         now_utc = now_utc.replace(tzinfo=timezone.utc)
 

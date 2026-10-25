@@ -14,6 +14,7 @@ from backend.models.application import Application
 from backend.models.document import DocType, DocumentStatus, UndertakingDocument, VerificationStatus
 from backend.models.user import Institution, User, UserRole
 from backend.services.audit_service import log_audit_event
+from backend.core.time_service import get_effective_time
 
 settings = get_settings()
 
@@ -158,7 +159,7 @@ async def save_uploaded_file(
     # Determine document status based on expiry
     doc_status = DocumentStatus.ACTIVE
     if expiry_date:
-        now_utc = datetime.now(timezone.utc)
+        now_utc = get_effective_time(db)
         exp_utc = (
             expiry_date if expiry_date.tzinfo is not None else expiry_date.replace(tzinfo=timezone.utc)
         )
@@ -359,7 +360,7 @@ def update_document_metadata(
     if expiry_date is not None:
         changes["expiry_date"] = {"old": doc.expiry_date, "new": expiry_date}
         doc.expiry_date = expiry_date
-        now_utc = datetime.now(timezone.utc)
+        now_utc = get_effective_time(db)
         exp_utc = (
             expiry_date if expiry_date.tzinfo is not None else expiry_date.replace(tzinfo=timezone.utc)
         )
