@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bureau Apex Console — AICTE Workflow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/css/custom.css">
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col justify-between">
+
+  <!-- Header -->
+  <header class="gradient-header text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center space-x-3">
+        <a href="/" class="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-blue-900 shadow text-sm">AICTE</a>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold">Bureau Apex Oversight Desk</h1>
+          <p class="text-xs text-blue-200">National Cross-Region Regulatory Intelligence &amp; SLA Escalation Monitor</p>
+        </div>
+      </div>
+
+      <!-- Time Simulation & Notification Controls -->
+      <div class="flex items-center space-x-3">
+        <div id="simulated-time-badge" class="hidden"></div>
+
+        <div class="relative">
+          <button id="btn-notification-bell" class="p-2 rounded-full bg-white/10 hover:bg-white/20 transition relative">
+            <span class="text-base">🔔</span>
+            <span id="notification-unread-count" class="hidden absolute -top-1 -right-1 bg-red-500 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
+          </button>
+        </div>
+
+        <div class="text-right hidden sm:block border-l border-white/20 pl-3">
+          <p id="nav-user-name" class="font-semibold text-xs text-white">Loading...</p>
+          <p class="text-[11px] text-blue-200">
+            <span id="nav-user-role">BUREAU OFFICER</span> &bull; <span>National HQ Scope</span>
+          </p>
+        </div>
+
+        <button class="btn-logout px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-medium border border-white/20 transition">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Drawer -->
+  <div id="notification-drawer" class="hidden fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-sm flex justify-end">
+    <div class="w-full max-w-md bg-white h-full shadow-2xl flex flex-col">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">🔔</span>
+          <h3 class="font-bold text-slate-800 text-sm">Bureau Alerts &amp; Direct Escalations</h3>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="btn-mark-all-read" class="text-xs text-blue-700 hover:underline">Mark all read</button>
+          <button id="btn-close-notifications" class="text-slate-400 hover:text-slate-600 font-bold text-xl px-2">&times;</button>
+        </div>
+      </div>
+      <div id="notification-drawer-list" class="flex-grow overflow-y-auto divide-y divide-slate-100"></div>
+    </div>
+  </div>
+
+  <!-- Main Body -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+    <!-- Top Banner -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <div class="inline-flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-900 uppercase tracking-wide">
+            Apex Bureau Level
+          </span>
+          <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium">
+            Cross-Regional Authority
+          </span>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mt-2">National Regulatory Oversight</h2>
+        <p class="text-xs text-slate-500 mt-1">
+          Monitor all regional jurisdictions, identify SLA bottlenecks, intervene on escalated applications, and oversee EVC progress.
+        </p>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button id="btn-run-sla" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1.5">
+          <span>⚡</span>
+          <span>Execute SLA Check</span>
+        </button>
+        <button id="btn-refresh-bureau" class="px-3.5 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1.5">
+          <span>🔄</span>
+          <span>Refresh Intelligence</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- National Metrics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total National Queue</span>
+          <span class="text-xl">🌐</span>
+        </div>
+        <div id="stat-total-apps" class="text-3xl font-extrabold text-blue-950 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Active applications across all regions</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-purple-600">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-purple-700 uppercase tracking-wider">SLA Escalations</span>
+          <span class="text-xl">🚨</span>
+        </div>
+        <div id="stat-total-escalations" class="text-3xl font-extrabold text-purple-800 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Senior bureau-level escalations</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-red-500">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-red-600 uppercase tracking-wider">Overdue Applications</span>
+          <span class="text-xl">⚠️</span>
+        </div>
+        <div id="stat-overdue-apps" class="text-3xl font-extrabold text-red-600 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Exceeded statutory SLA deadlines</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-amber-700 uppercase tracking-wider">Delayed EVC Visits</span>
+          <span class="text-xl">⏳</span>
+        </div>
+        <div id="stat-delayed-evc" class="text-3xl font-extrabold text-amber-700 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Past scheduled inspection date</p>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Cross-Regional Pendency Comparison</h3>
+        <p class="text-xs text-slate-400 mb-4">Volume of active institutional proposals across jurisdictional regional offices</p>
+        <div class="h-64 relative">
+          <canvas id="chart-regional-pendency"></canvas>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">National Stage Progression Breakdown</h3>
+        <p class="text-xs text-slate-400 mb-4">Application distribution by current statutory scrutiny and inspection stage</p>
+        <div class="h-64 relative">
+          <canvas id="chart-stage-distribution"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 1: Formal SLA Escalations Feed -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-purple-50/50">
+        <div class="flex items-center space-x-2">
+          <span class="text-base text-purple-700">🚨</span>
+          <div>
+            <h3 class="font-bold text-purple-950 text-sm">Critical SLA Escalations Feed</h3>
+            <p class="text-xs text-purple-800">Formal statutory alerts triggered after overdue thresholds and dispatched to apex oversight</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full border border-purple-200">
+          Apex Review Required
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-purple-50/30 text-purple-900 uppercase font-semibold border-b border-purple-100">
+            <tr>
+              <th class="px-6 py-3">Escalation ID</th>
+              <th class="px-6 py-3">Trackable Entity &amp; ID</th>
+              <th class="px-6 py-3">Recipients &amp; Role</th>
+              <th class="px-6 py-3">Days Overdue</th>
+              <th class="px-6 py-3">Escalation Timestamp</th>
+              <th class="px-6 py-3">Message</th>
+            </tr>
+          </thead>
+          <tbody id="escalations-table-body" class="divide-y divide-purple-100/50">
+            <tr>
+              <td colspan="6" class="px-6 py-6 text-center text-slate-400">Loading statutory escalations...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 2: Cross-Regional Applications Oversight -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">National Applications Roster</h3>
+          <p class="text-xs text-slate-500">Filter and audit applications across Northern, Western, Southern, and Eastern regions</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <select id="filter-region" class="px-2.5 py-1 text-xs border border-slate-300 rounded bg-white">
+            <option value="">All Regions</option>
+            <option value="NORTH">North Region</option>
+            <option value="WEST">West Region</option>
+            <option value="SOUTH">South Region</option>
+            <option value="EAST">East Region</option>
+            <option value="CENTRAL">Central Region</option>
+          </select>
+
+          <select id="filter-overdue-only" class="px-2.5 py-1 text-xs border border-slate-300 rounded bg-white">
+            <option value="ALL">All Applications</option>
+            <option value="OVERDUE_ONLY">Overdue SLA Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Application No.</th>
+              <th class="px-6 py-3">Institution</th>
+              <th class="px-6 py-3">Jurisdiction</th>
+              <th class="px-6 py-3">Current Stage</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3">Deadline &amp; Overdue Status</th>
+              <th class="px-6 py-3 text-right">Audit</th>
+            </tr>
+          </thead>
+          <tbody id="bureau-apps-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="7" class="px-6 py-6 text-center text-slate-400">Loading national applications...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 3: National EVC Visit Monitoring -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">National EVC Inspection Monitor</h3>
+          <p class="text-xs text-slate-500">Track on-site physical verification progress and delays across regional offices</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Visit ID / App</th>
+              <th class="px-6 py-3">Institution &amp; Region</th>
+              <th class="px-6 py-3">Visit Status</th>
+              <th class="px-6 py-3">Scheduled Date</th>
+              <th class="px-6 py-3">Inspection Committee Lead</th>
+              <th class="px-6 py-3">Recommendation</th>
+            </tr>
+          </thead>
+          <tbody id="bureau-evc-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="6" class="px-6 py-6 text-center text-slate-400">Loading national EVC records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-slate-900 text-slate-400 py-4 text-center text-xs">
+    AICTE Workflow Automation Platform &bull; Bureau Apex Regulatory Oversight
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script>
+    let nationalApps = [];
+    let nationalEscalations = [];
+    let nationalEvc = [];
+    let regChart = null;
+    let stageChart = null;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      loadBureauData();
+
+      document.getElementById("btn-refresh-bureau").onclick = loadBureauData;
+      document.getElementById("btn-run-sla").onclick = async () => {
+        try {
+          await API.runDeadlineCheck();
+          API.showToast("National SLA and escalation evaluation completed!", "success");
+          loadBureauData();
+        } catch (err) {
+          API.showToast(err.message || "Failed to execute SLA check", "error");
+        }
+      };
+
+      document.getElementById("filter-region").onchange = renderNationalApplications;
+      document.getElementById("filter-overdue-only").onchange = renderNationalApplications;
+    });
+
+    async function loadBureauData() {
+      await Promise.all([
+        fetchNationalApps(),
+        fetchEscalations(),
+        fetchNationalEVC()
+      ]);
+      renderBureauCharts();
+    }
+
+    async function fetchNationalApps() {
+      try {
+        const apps = await API.getApplications();
+        nationalApps = apps || [];
+        renderNationalApplications();
+      } catch (err) {
+        document.getElementById("bureau-apps-table-body").innerHTML = `
+          <tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Failed to load national applications: ${API.escapeHtml(err.message)}</td></tr>
+        `;
+      }
+    }
+
+    async function fetchEscalations() {
+      try {
+        const escalations = await API.getEscalations();
+        nationalEscalations = escalations || [];
+        renderEscalations();
+      } catch (err) {
+        document.getElementById("escalations-table-body").innerHTML = `
+          <tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load escalations: ${API.escapeHtml(err.message)}</td></tr>
+        `;
+      }
+    }
+
+    async function fetchNationalEVC() {
+      try {
+        const evc = await API.getEVCQueue();
+        nationalEvc = evc || [];
+        renderNationalEVC();
+      } catch (err) {
+        document.getElementById("bureau-evc-table-body").innerHTML = `
+          <tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load EVC monitor: ${API.escapeHtml(err.message)}</td></tr>
+        `;
+      }
+    }
+
+    function renderNationalApplications() {
+      const tbody = document.getElementById("bureau-apps-table-body");
+      const regionFilter = document.getElementById("filter-region").value;
+      const overdueFilter = document.getElementById("filter-overdue-only").value;
+
+      let filtered = nationalApps;
+
+      if (regionFilter) {
+        filtered = filtered.filter(a => a.institution && a.institution.region === regionFilter);
+      }
+
+      if (overdueFilter === "OVERDUE_ONLY") {
+        filtered = filtered.filter(a => {
+          if (!a.current_stage_deadline) return false;
+          const rel = API.formatRelativeDays(a.current_stage_deadline);
+          return rel.includes("overdue") && (a.status === "SUBMITTED" || a.status === "IN_REVIEW");
+        });
+      }
+
+      // Compute overview stats
+      document.getElementById("stat-total-apps").textContent = nationalApps.length;
+      let overdueCount = 0;
+      nationalApps.forEach(a => {
+        if (a.current_stage_deadline && (a.status === "SUBMITTED" || a.status === "IN_REVIEW")) {
+          const rel = API.formatRelativeDays(a.current_stage_deadline);
+          if (rel.includes("overdue")) overdueCount++;
+        }
+      });
+      document.getElementById("stat-overdue-apps").textContent = overdueCount;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400">No applications match current filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(app => {
+        let statusBadge = "bg-slate-100 text-slate-800 border-slate-200";
+        if (app.status === "APPROVED") statusBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
+        else if (app.status === "REJECTED") statusBadge = "bg-red-100 text-red-800 border-red-300";
+        else if (app.status === "IN_REVIEW") statusBadge = "bg-blue-100 text-blue-800 border-blue-300";
+        else if (app.status === "RETURNED") statusBadge = "bg-amber-100 text-amber-800 border-amber-300";
+
+        let deadlineHtml = '<span class="text-slate-400">N/A</span>';
+        if (app.current_stage_deadline) {
+          const rel = API.formatRelativeDays(app.current_stage_deadline);
+          const isOverdue = rel.includes("overdue");
+          const badgeClass = isOverdue ? "bg-red-100 text-red-800 border-red-300 font-bold" : "bg-slate-100 text-slate-700 border-slate-200";
+          deadlineHtml = `
+            <span class="px-2 py-0.5 rounded text-[10px] border ${badgeClass}">${API.escapeHtml(rel)}</span>
+            <div class="text-[10px] text-slate-400 mt-0.5">${API.formatDateOnly(app.current_stage_deadline)}</div>
+          `;
+        }
+
+        const stageName = app.current_stage ? app.current_stage.name : (app.status === "APPROVED" ? "Completed" : "Scrutiny");
+        const instName = app.institution ? app.institution.name : `Inst #${app.institution_id}`;
+        const region = app.institution ? app.institution.region : "Unknown";
+
+        return `
+          <tr class="hover:bg-slate-50/70 transition">
+            <td class="px-6 py-3 font-semibold text-blue-900">${API.escapeHtml(app.application_number)}</td>
+            <td class="px-6 py-3">
+              <div class="font-medium text-slate-800">${API.escapeHtml(instName)}</div>
+              <div class="text-[10px] text-slate-400">${API.escapeHtml(app.title)}</div>
+            </td>
+            <td class="px-6 py-3 font-mono font-semibold text-slate-700">${API.escapeHtml(region)}</td>
+            <td class="px-6 py-3 font-medium text-slate-800">${API.escapeHtml(stageName)}</td>
+            <td class="px-6 py-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadge}">${API.escapeHtml(app.status)}</span>
+            </td>
+            <td class="px-6 py-3">${deadlineHtml}</td>
+            <td class="px-6 py-3 text-right">
+              <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs">
+                ${app.stage_history ? app.stage_history.length + ' steps' : ''}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderEscalations() {
+      const tbody = document.getElementById("escalations-table-body");
+      document.getElementById("stat-total-escalations").textContent = nationalEscalations.length;
+
+      if (nationalEscalations.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">No SLA escalations currently active. System is operating within compliance limits.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = nationalEscalations.map(esc => `
+        <tr class="hover:bg-purple-50/30 transition">
+          <td class="px-6 py-3 font-mono font-bold text-purple-900">#ESC-${esc.id}</td>
+          <td class="px-6 py-3">
+            <span class="px-2 py-0.5 bg-purple-100 text-purple-900 rounded font-semibold text-[10px]">${API.escapeHtml(esc.trackable_type)}</span>
+            <div class="font-mono text-slate-600 text-[10px] mt-0.5">Ref ID: ${esc.trackable_id}</div>
+          </td>
+          <td class="px-6 py-3">
+            <span class="font-semibold text-slate-800">${API.escapeHtml(esc.escalation_role)}</span>
+          </td>
+          <td class="px-6 py-3 font-bold text-red-600">${esc.days_overdue} days overdue</td>
+          <td class="px-6 py-3 text-slate-500">${API.formatDate(esc.created_at)}</td>
+          <td class="px-6 py-3 text-slate-700 max-w-xs truncate" title="${API.escapeHtml(esc.message || '')}">
+            ${API.escapeHtml(esc.message || "Statutory escalation notice")}
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function renderNationalEVC() {
+      const tbody = document.getElementById("bureau-evc-table-body");
+      const delayedCount = nationalEvc.filter(v => v.status === "DELAYED").length;
+      document.getElementById("stat-delayed-evc").textContent = delayedCount;
+
+      if (nationalEvc.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">No EVC visits recorded across regions.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = nationalEvc.map(v => {
+        let statusBadge = "bg-slate-100 text-slate-700 border-slate-200";
+        if (v.status === "SCHEDULED") statusBadge = "bg-blue-100 text-blue-800 border-blue-300";
+        else if (v.status === "COMPLETED") statusBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
+        else if (v.status === "DELAYED") statusBadge = "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+
+        return `
+          <tr class="hover:bg-slate-50/70 transition">
+            <td class="px-6 py-3 font-semibold text-blue-900">
+              EVC #${v.id}
+              <div class="text-[10px] text-slate-400 font-mono">${API.escapeHtml(v.application_number || `App #${v.application_id}`)}</div>
+            </td>
+            <td class="px-6 py-3">
+              <div class="font-medium text-slate-800">${API.escapeHtml(v.institution_name || "Institution")}</div>
+              <div class="text-[10px] text-slate-500 font-mono">${API.escapeHtml(v.region || "")}</div>
+            </td>
+            <td class="px-6 py-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadge}">${API.escapeHtml(v.status)}</span>
+            </td>
+            <td class="px-6 py-3">${v.scheduled_date ? API.formatDateOnly(v.scheduled_date) : '<span class="text-slate-400">Not scheduled</span>'}</td>
+            <td class="px-6 py-3 text-slate-700">${API.escapeHtml(v.team_lead || "Unassigned")}</td>
+            <td class="px-6 py-3">
+              ${v.recommendation ? `
+                <span class="font-bold text-[10px] ${v.recommendation === 'RECOMMENDED' ? 'text-emerald-700' : 'text-red-700'}">
+                  ${API.escapeHtml(v.recommendation)}
+                </span>
+              ` : '<span class="text-slate-400 italic">Pending inspection</span>'}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderBureauCharts() {
+      // 1. Regional Pendency Bar Chart
+      const regionCounts = {};
+      nationalApps.forEach(a => {
+        const r = (a.institution && a.institution.region) || "NORTH";
+        regionCounts[r] = (regionCounts[r] || 0) + 1;
+      });
+
+      const regLabels = Object.keys(regionCounts).length ? Object.keys(regionCounts) : ["NORTH", "WEST", "SOUTH", "EAST"];
+      const regData = Object.keys(regionCounts).length ? Object.values(regionCounts) : [0, 0, 0, 0];
+
+      const ctxReg = document.getElementById("chart-regional-pendency").getContext("2d");
+      if (regChart) regChart.destroy();
+      regChart = new Chart(ctxReg, {
+        type: "bar",
+        data: {
+          labels: regLabels,
+          datasets: [{
+            label: "Total Applications",
+            data: regData,
+            backgroundColor: ["#1e3a8a", "#0284c7", "#4338ca", "#0d9488", "#d97706"],
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      });
+
+      // 2. Stage Progression Breakdown
+      const stageCounts = {};
+      nationalApps.forEach(a => {
+        const s = a.current_stage ? a.current_stage.name : (a.status === "APPROVED" ? "Approved" : "Scrutiny");
+        stageCounts[s] = (stageCounts[s] || 0) + 1;
+      });
+
+      const stageLabels = Object.keys(stageCounts).length ? Object.keys(stageCounts) : ["Scrutiny Review", "EVC Inspection", "Decision"];
+      const stageData = Object.keys(stageCounts).length ? Object.values(stageCounts) : [0, 0, 0];
+
+      const ctxStage = document.getElementById("chart-stage-distribution").getContext("2d");
+      if (stageChart) stageChart.destroy();
+      stageChart = new Chart(ctxStage, {
+        type: "doughnut",
+        data: {
+          labels: stageLabels,
+          datasets: [{
+            data: stageData,
+            backgroundColor: ["#3b82f6", "#6366f1", "#10b981", "#f59e0b", "#ec4899"],
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 10 } } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

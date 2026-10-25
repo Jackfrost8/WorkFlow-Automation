@@ -5,86 +5,1078 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Regulatory Officer Workspace — AICTE Workflow</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="/static/css/custom.css">
 </head>
 <body class="min-h-screen bg-slate-50 flex flex-col justify-between">
 
   <!-- Header -->
-  <header class="gradient-header text-white shadow-md">
+  <header class="gradient-header text-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-blue-900 shadow text-sm">AICTE</a>
         <div>
-          <h1 class="text-base sm:text-lg font-bold">Officer Workspace</h1>
-          <p class="text-xs text-blue-200">Regional &amp; Bureau Regulatory Console</p>
+          <h1 class="text-base sm:text-lg font-bold">Officer Scrutiny &amp; Regulatory Desk</h1>
+          <p class="text-xs text-blue-200">Regional Jurisdiction &amp; Statutory Workflow Operations</p>
         </div>
       </div>
 
-      <!-- User Nav Profile -->
-      <div class="flex items-center space-x-4 text-xs">
-        <div class="text-right hidden sm:block">
-          <p id="nav-user-name" class="font-semibold text-white">Loading...</p>
-          <p class="text-blue-200"><span id="nav-user-role">OFFICER</span> &bull; <span id="nav-user-email"></span></p>
+      <!-- Time Simulation & Notification Controls -->
+      <div class="flex items-center space-x-3">
+        <div id="simulated-time-badge" class="hidden"></div>
+
+        <!-- Notification Bell -->
+        <div class="relative">
+          <button id="btn-notification-bell" class="p-2 rounded-full bg-white/10 hover:bg-white/20 transition relative">
+            <span class="text-base">🔔</span>
+            <span id="notification-unread-count" class="hidden absolute -top-1 -right-1 bg-red-500 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
+          </button>
         </div>
-        <button class="btn-logout px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded border border-white/20 transition">
+
+        <div class="text-right hidden sm:block border-l border-white/20 pl-3">
+          <p id="nav-user-name" class="font-semibold text-xs text-white">Loading...</p>
+          <p class="text-[11px] text-blue-200">
+            <span id="nav-user-role">OFFICER</span> &bull; <span id="nav-user-region">Assigned Region</span>
+          </p>
+        </div>
+
+        <button class="btn-logout px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-medium border border-white/20 transition">
           Sign Out
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Content -->
+  <!-- Notification Drawer -->
+  <div id="notification-drawer" class="hidden fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-sm flex justify-end">
+    <div class="w-full max-w-md bg-white h-full shadow-2xl flex flex-col">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">🔔</span>
+          <h3 class="font-bold text-slate-800 text-sm">Regulatory Alerts &amp; Escalations</h3>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="btn-mark-all-read" class="text-xs text-blue-700 hover:underline">Mark all read</button>
+          <button id="btn-close-notifications" class="text-slate-400 hover:text-slate-600 font-bold text-xl px-2">&times;</button>
+        </div>
+      </div>
+      <div id="notification-drawer-list" class="flex-grow overflow-y-auto divide-y divide-slate-100"></div>
+    </div>
+  </div>
+
+  <!-- Main Body -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
-    
-    <!-- Welcome Banner -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+    <!-- Welcome & Region Jurisdiction Pill -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 uppercase tracking-wide">
-          Regulatory Jurisdiction
-        </span>
-        <h2 class="text-2xl font-bold text-slate-800 mt-2">Officer Scrutiny &amp; Verification Desk</h2>
+        <div class="inline-flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 uppercase tracking-wide">
+            Regulatory Authority
+          </span>
+          <span id="region-scope-badge" class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium">
+            Regional Jurisdiction Enforced
+          </span>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mt-2">Scrutiny, EVC &amp; Verification Desk</h2>
         <p class="text-xs text-slate-500 mt-1">
-          Assigned Area: <span id="nav-user-region" class="font-semibold text-slate-700">HQ / Regional Office</span>
+          Review institutional applications, conduct stage transitions, schedule EVC inspections, and verify statutory undertakings.
         </p>
       </div>
-      <div class="flex items-center space-x-3">
-        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold">
-          Authorized Officer
-        </span>
+
+      <div class="flex items-center space-x-2">
+        <button id="btn-manual-deadline-check" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1.5">
+          <span>⚡</span>
+          <span>Run SLA Check</span>
+        </button>
+        <button id="btn-refresh-all" class="px-3.5 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1.5">
+          <span>🔄</span>
+          <span>Refresh Desk</span>
+        </button>
       </div>
     </div>
 
-    <!-- Metrics Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <!-- Summary Metrics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-        <div class="text-xs text-slate-500 uppercase font-semibold">Pending Scrutiny</div>
-        <div class="text-3xl font-extrabold text-slate-900 mt-2">0</div>
-        <p class="text-xs text-slate-400 mt-1">Applications in queue</p>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Scrutiny</span>
+          <span class="text-xl">📋</span>
+        </div>
+        <div id="stat-pending-scrutiny" class="text-3xl font-extrabold text-blue-900 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Applications awaiting review</p>
       </div>
+
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-        <div class="text-xs text-slate-500 uppercase font-semibold">Scheduled EVCs</div>
-        <div class="text-3xl font-extrabold text-slate-900 mt-2">0</div>
-        <p class="text-xs text-slate-400 mt-1">Inspections assigned</p>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">EVC Inspections</span>
+          <span class="text-xl">🏛️</span>
+        </div>
+        <div id="stat-evc-count" class="text-3xl font-extrabold text-indigo-700 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Pending or Scheduled visits</p>
       </div>
+
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-        <div class="text-xs text-slate-500 uppercase font-semibold">Overdue Cases</div>
-        <div class="text-3xl font-extrabold text-red-600 mt-2">0</div>
-        <p class="text-xs text-slate-400 mt-1">SLA breach alerts</p>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Undertakings to Verify</span>
+          <span class="text-xl">📑</span>
+        </div>
+        <div id="stat-undertakings-verify" class="text-3xl font-extrabold text-amber-600 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Submitted evidence proofs</p>
       </div>
+
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm border-l-4 border-l-red-500">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-red-600 uppercase tracking-wider">Overdue SLA Cases</span>
+          <span class="text-xl">⚠️</span>
+        </div>
+        <div id="stat-overdue-count" class="text-3xl font-extrabold text-red-600 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Critical deadline breaches</p>
+      </div>
+    </div>
+
+    <!-- Visual Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm lg:col-span-2">
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Stage-wise Regional Pendency</h3>
+        <p class="text-xs text-slate-400 mb-4">Live distribution of active applications across workflow stages</p>
+        <div class="h-64 relative">
+          <canvas id="chart-stage-pendency"></canvas>
+        </div>
+      </div>
+
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-        <div class="text-xs text-slate-500 uppercase font-semibold">Approvals Granted</div>
-        <div class="text-3xl font-extrabold text-blue-900 mt-2">0</div>
-        <p class="text-xs text-slate-400 mt-1">Human decisions finalized</p>
+        <h3 class="font-bold text-slate-800 text-sm mb-1">Status Breakdown</h3>
+        <p class="text-xs text-slate-400 mb-4">Application pipeline progression</p>
+        <div class="h-64 relative">
+          <canvas id="chart-status-breakdown"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 1: Authorized Application Queue -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Regional Scrutiny &amp; Workflow Queue</h3>
+          <p class="text-xs text-slate-500">Authorized applications requiring scrutiny, verification, or final committee decisions</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <select id="filter-app-status" class="px-2.5 py-1 text-xs border border-slate-300 rounded bg-white">
+            <option value="">All Statuses</option>
+            <option value="SUBMITTED">SUBMITTED</option>
+            <option value="IN_REVIEW">IN_REVIEW</option>
+            <option value="APPROVED">APPROVED</option>
+            <option value="REJECTED">REJECTED</option>
+            <option value="RETURNED">RETURNED</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Application No.</th>
+              <th class="px-6 py-3">Institution</th>
+              <th class="px-6 py-3">Route &amp; Title</th>
+              <th class="px-6 py-3">Current Stage</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3">Deadline</th>
+              <th class="px-6 py-3 text-right">Regulatory Actions</th>
+            </tr>
+          </thead>
+          <tbody id="officer-apps-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="7" class="px-6 py-6 text-center text-slate-400">Loading applications...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 2: EVC Inspections Queue -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Expert Visit Committee (EVC) Queue</h3>
+          <p class="text-xs text-slate-500">Inspection scheduling, committee composition, visit reporting, and status tracking</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <select id="filter-evc-status" class="px-2.5 py-1 text-xs border border-slate-300 rounded bg-white">
+            <option value="">All EVC Statuses</option>
+            <option value="PENDING">PENDING</option>
+            <option value="SCHEDULED">SCHEDULED</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="DELAYED">DELAYED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Visit ID / App</th>
+              <th class="px-6 py-3">Institution &amp; Region</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3">Due / Scheduled Date</th>
+              <th class="px-6 py-3">Committee Team</th>
+              <th class="px-6 py-3 text-right">EVC Actions</th>
+            </tr>
+          </thead>
+          <tbody id="evc-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="6" class="px-6 py-6 text-center text-slate-400">Loading EVC visits...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 3: Pending Undertaking Verifications -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Statutory Undertaking Verifications</h3>
+          <p class="text-xs text-slate-500">Verify institutional compliance evidence or reject with mandatory deficiency justification</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Application Ref</th>
+              <th class="px-6 py-3">Statutory Requirement</th>
+              <th class="px-6 py-3">Submitted Proof Reference</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3 text-right">Verification Action</th>
+            </tr>
+          </thead>
+          <tbody id="undertakings-verify-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="5" class="px-6 py-6 text-center text-slate-400">Loading pending verifications...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
   </main>
 
+  <!-- Modal: Complete / Advance Stage -->
+  <div id="modal-complete-stage" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-slate-800">Process &amp; Complete Stage</h3>
+        <button id="btn-close-complete-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-complete-stage" class="mt-4 space-y-4">
+        <input type="hidden" id="complete-app-id">
+
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700">
+          <div>Application: <strong id="complete-app-num" class="text-blue-900"></strong></div>
+          <div class="mt-1">Current Stage: <strong id="complete-stage-name" class="text-slate-800"></strong></div>
+        </div>
+
+        <!-- Decision Selector (Visible only if Final Decision stage) -->
+        <div id="decision-box" class="hidden">
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+            Statutory Final Committee Decision <span class="text-red-500">*</span>
+          </label>
+          <select id="complete-decision-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-800 font-semibold">
+            <option value="APPROVE">APPROVE — Grant Statutory Institutional Approval</option>
+            <option value="REJECT">REJECT — Deny Institutional Approval with Cause</option>
+          </select>
+          <p class="text-[11px] text-slate-400 mt-1">Requires authorized human decision authority.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+            Scrutiny Findings &amp; Officer Remarks
+          </label>
+          <textarea id="complete-remarks" rows="3" required placeholder="Document verification checklist verified, infrastructural benchmarks met, compliance evidence validated..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-complete-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-complete" class="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow">
+            Confirm &amp; Advance Stage
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Return Application (Reason Mandatory) -->
+  <div id="modal-return-app" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-red-800 flex items-center space-x-2">
+          <span>↩️</span>
+          <span>Return Application for Deficiency</span>
+        </h3>
+        <button id="btn-close-return-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-return-app" class="mt-4 space-y-4">
+        <input type="hidden" id="return-app-id">
+
+        <div class="p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-900">
+          Returning application: <strong id="return-app-num"></strong>
+          <p class="mt-1 text-[11px] text-amber-800">
+            This will mark the application as <strong>RETURNED</strong> and require corrective resubmission by the applicant institution.
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+            Substantive Reason for Return <span class="text-red-500">*</span>
+          </label>
+          <textarea id="return-reason" rows="3" required placeholder="Specify exact documentary or infrastructural deficiencies requiring rectification..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-red-600"></textarea>
+          <p class="text-[11px] text-slate-400 mt-1">Reason is mandatory and recorded in the cryptographic audit log.</p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-return-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-return" class="px-5 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg text-xs font-semibold shadow">
+            Return Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Schedule / Reschedule EVC Visit -->
+  <div id="modal-schedule-evc" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 id="evc-modal-title" class="text-base font-bold text-slate-800">Schedule EVC Inspection Visit</h3>
+        <button id="btn-close-evc-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-schedule-evc" class="mt-4 space-y-4">
+        <input type="hidden" id="evc-visit-id">
+        <input type="hidden" id="evc-action-mode" value="SCHEDULE">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Scheduled Inspection Date</label>
+          <input type="date" id="evc-scheduled-date" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+        </div>
+
+        <div id="evc-team-fields">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Committee Team Lead</label>
+            <input type="text" id="evc-team-lead" placeholder="Prof. Dr. R. K. Sharma (Senior Inspection Chair)"
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+          </div>
+          <div class="mt-3">
+            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Expert Committee Members</label>
+            <input type="text" id="evc-experts" placeholder="Dr. A. Verma (Civil/Infra), Dr. S. Iyer (Curriculum)"
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+          </div>
+        </div>
+
+        <div>
+          <label id="evc-remarks-label" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Officer Remarks / Terms of Reference</label>
+          <textarea id="evc-remarks" rows="2" placeholder="Standard on-site physical infrastructure &amp; laboratory verification..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-evc-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-evc" class="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow">
+            Confirm Schedule
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Complete EVC Inspection Visit -->
+  <div id="modal-complete-evc" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-slate-800">Record EVC Inspection Completion</h3>
+        <button id="btn-close-evc-comp-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-complete-evc" class="mt-4 space-y-4">
+        <input type="hidden" id="evc-comp-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Committee Recommendation</label>
+          <select id="evc-comp-recommendation" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-800 font-semibold">
+            <option value="RECOMMENDED">RECOMMENDED — Favorable Physical Verification</option>
+            <option value="NOT_RECOMMENDED">NOT RECOMMENDED — Critical Deficiencies Observed</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Inspection Report Summary &amp; Findings</label>
+          <textarea id="evc-comp-summary" rows="3" required placeholder="Detailed summary of laboratory equipment, safety clearances, and faculty verification..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Observed Deficiencies (Optional)</label>
+          <textarea id="evc-comp-deficiencies" rows="2" placeholder="List any minor or rectifiable deficiencies..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-evc-comp-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-evc-comp" class="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow">
+            Complete Inspection Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Reject Undertaking Proof -->
+  <div id="modal-reject-undertaking" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-red-800 flex items-center space-x-2">
+          <span>❌</span>
+          <span>Reject Compliance Evidence</span>
+        </h3>
+        <button id="btn-close-reject-u-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-reject-undertaking" class="mt-4 space-y-4">
+        <input type="hidden" id="reject-u-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+            Substantive Rejection Reason <span class="text-red-500">*</span>
+          </label>
+          <textarea id="reject-u-reason" rows="3" required placeholder="Specify why the submitted proof was insufficient or non-compliant..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-red-600"></textarea>
+          <p class="text-[11px] text-slate-400 mt-1">This feedback is returned directly to the institution to guide their resubmission.</p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-reject-u-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-reject-u" class="px-5 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg text-xs font-semibold shadow">
+            Reject Evidence
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer class="bg-slate-900 text-slate-400 py-4 text-center text-xs">
-    AICTE Workflow Automation Platform &bull; Phase 2 Authentication Active
+    AICTE Workflow Automation Platform &bull; Regulatory Officer Console &bull; Statutory Authority
   </footer>
 
   <script src="/static/js/api.js"></script>
   <script src="/static/js/auth.js"></script>
+  <script>
+    let officerApps = [];
+    let officerEvc = [];
+    let officerUndertakings = [];
+    let pendencyChart = null;
+    let statusChart = null;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      loadOfficerDashboardData();
+
+      document.getElementById("btn-refresh-all").onclick = loadOfficerDashboardData;
+      document.getElementById("btn-manual-deadline-check").onclick = async () => {
+        try {
+          const res = await API.runDeadlineCheck();
+          API.showToast("Deadline and SLA escalation engine executed successfully!", "success");
+          loadOfficerDashboardData();
+        } catch (err) {
+          API.showToast(err.message || "Failed to trigger SLA check", "error");
+        }
+      };
+
+      document.getElementById("filter-app-status").onchange = renderApplications;
+      document.getElementById("filter-evc-status").onchange = renderEVC;
+
+      setupOfficerModals();
+    });
+
+    async function loadOfficerDashboardData() {
+      await Promise.all([
+        fetchApplications(),
+        fetchEVCVisits(),
+        fetchUndertakings()
+      ]);
+      renderCharts();
+    }
+
+    // -------------------------------------------------------------
+    // Data Fetching
+    // -------------------------------------------------------------
+    async function fetchApplications() {
+      try {
+        const apps = await API.getApplications();
+        officerApps = apps || [];
+        renderApplications();
+      } catch (err) {
+        document.getElementById("officer-apps-table-body").innerHTML = `
+          <tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Failed to load applications: ${API.escapeHtml(err.message)}</td></tr>
+        `;
+      }
+    }
+
+    async function fetchEVCVisits() {
+      try {
+        const visits = await API.getEVCQueue();
+        officerEvc = visits || [];
+        renderEVC();
+      } catch (err) {
+        document.getElementById("evc-table-body").innerHTML = `
+          <tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load EVC visits: ${API.escapeHtml(err.message)}</td></tr>
+        `;
+      }
+    }
+
+    async function fetchUndertakings() {
+      try {
+        const u = await API.getUndertakings();
+        officerUndertakings = u || [];
+        renderUndertakings();
+      } catch (err) {
+        document.getElementById("undertakings-verify-table-body").innerHTML = `
+          <tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Failed to load undertakings: ${API.escapeHtml(err.message)}</td></tr>
+        `;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Render Applications
+    // -------------------------------------------------------------
+    function renderApplications() {
+      const tbody = document.getElementById("officer-apps-table-body");
+      const filterStatus = document.getElementById("filter-app-status").value;
+
+      let filtered = officerApps;
+      if (filterStatus) {
+        filtered = filtered.filter(a => a.status === filterStatus);
+      }
+
+      // Compute stats
+      const pendingScrutiny = officerApps.filter(a => a.status === "SUBMITTED" || a.status === "IN_REVIEW").length;
+      document.getElementById("stat-pending-scrutiny").textContent = pendingScrutiny;
+
+      let overdueCount = 0;
+      officerApps.forEach(a => {
+        if (a.current_stage_deadline && (a.status === "SUBMITTED" || a.status === "IN_REVIEW")) {
+          const rel = API.formatRelativeDays(a.current_stage_deadline);
+          if (rel.includes("overdue")) overdueCount++;
+        }
+      });
+      document.getElementById("stat-overdue-count").textContent = overdueCount;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-8 text-center text-slate-400">
+              No applications match current filters in your regional jurisdiction.
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(app => {
+        let statusBadge = "bg-slate-100 text-slate-800 border-slate-200";
+        if (app.status === "APPROVED") statusBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
+        else if (app.status === "REJECTED") statusBadge = "bg-red-100 text-red-800 border-red-300";
+        else if (app.status === "IN_REVIEW") statusBadge = "bg-blue-100 text-blue-800 border-blue-300";
+        else if (app.status === "RETURNED") statusBadge = "bg-amber-100 text-amber-800 border-amber-300";
+
+        let deadlineHtml = '<span class="text-slate-400">N/A</span>';
+        if (app.current_stage_deadline) {
+          const rel = API.formatRelativeDays(app.current_stage_deadline);
+          const isOverdue = rel.includes("overdue");
+          const badgeClass = isOverdue ? "bg-red-50 text-red-700 border-red-200 font-bold" : "bg-slate-50 text-slate-700 border-slate-200";
+          deadlineHtml = `
+            <div>
+              <span class="px-2 py-0.5 rounded text-[10px] border ${badgeClass}">${API.escapeHtml(rel)}</span>
+              <div class="text-[10px] text-slate-400 mt-0.5">${API.formatDateOnly(app.current_stage_deadline)}</div>
+            </div>
+          `;
+        }
+
+        const stageName = app.current_stage ? app.current_stage.name : (app.status === "APPROVED" ? "Completed" : "Scrutiny");
+        const instName = app.institution ? app.institution.name : `Inst #${app.institution_id}`;
+        const region = app.institution ? app.institution.region : "";
+
+        const canProcess = app.status === "SUBMITTED" || app.status === "IN_REVIEW" || app.status === "RETURNED";
+
+        return `
+          <tr class="hover:bg-slate-50/70 transition">
+            <td class="px-6 py-3 font-semibold text-blue-900">${API.escapeHtml(app.application_number)}</td>
+            <td class="px-6 py-3">
+              <div class="font-medium text-slate-800">${API.escapeHtml(instName)}</div>
+              <div class="text-[10px] text-slate-400 font-mono">${API.escapeHtml(region)}</div>
+            </td>
+            <td class="px-6 py-3">
+              <div class="font-medium text-slate-700">${API.escapeHtml(app.title)}</div>
+              <span class="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[10px] font-mono">${API.escapeHtml(app.route_type)}</span>
+            </td>
+            <td class="px-6 py-3 font-semibold text-slate-800">${API.escapeHtml(stageName)}</td>
+            <td class="px-6 py-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadge}">${API.escapeHtml(app.status)}</span>
+            </td>
+            <td class="px-6 py-3">${deadlineHtml}</td>
+            <td class="px-6 py-3 text-right space-x-1 whitespace-nowrap">
+              ${canProcess ? `
+                <button onclick="openCompleteStageModal(${app.id})" class="px-2.5 py-1 bg-blue-900 hover:bg-blue-800 text-white rounded text-xs font-semibold shadow transition">
+                  Process Stage
+                </button>
+                <button onclick="openReturnModal(${app.id})" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded text-xs font-medium transition">
+                  Return
+                </button>
+              ` : `
+                <span class="text-slate-400 text-xs italic">Finalized</span>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // -------------------------------------------------------------
+    // Render EVC Queue
+    // -------------------------------------------------------------
+    function renderEVC() {
+      const tbody = document.getElementById("evc-table-body");
+      const filter = document.getElementById("filter-evc-status").value;
+
+      let filtered = officerEvc;
+      if (filter) {
+        filtered = filtered.filter(v => v.status === filter);
+      }
+
+      document.getElementById("stat-evc-count").textContent = officerEvc.filter(v => v.status === "PENDING" || v.status === "SCHEDULED").length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">No EVC visits currently in queue.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(v => {
+        let statusBadge = "bg-slate-100 text-slate-700 border-slate-200";
+        if (v.status === "SCHEDULED") statusBadge = "bg-blue-100 text-blue-800 border-blue-300";
+        else if (v.status === "COMPLETED") statusBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
+        else if (v.status === "DELAYED") statusBadge = "bg-rose-100 text-rose-800 border-rose-300";
+        else if (v.status === "CANCELLED") statusBadge = "bg-slate-200 text-slate-600 border-slate-300";
+
+        let dateText = `<span class="text-slate-400">Not scheduled</span>`;
+        if (v.scheduled_date) {
+          dateText = `<strong>${API.formatDateOnly(v.scheduled_date)}</strong>`;
+        } else if (v.due_date) {
+          dateText = `<span class="text-amber-700">Due: ${API.formatDateOnly(v.due_date)}</span>`;
+        }
+
+        const teamText = v.team_lead ? `${API.escapeHtml(v.team_lead)}` : `<span class="text-slate-400 italic">Unassigned</span>`;
+
+        let actionBtns = "";
+        if (v.status === "PENDING") {
+          actionBtns = `
+            <button onclick="openScheduleModal(${v.id}, 'SCHEDULE')" class="px-2.5 py-1 bg-indigo-700 hover:bg-indigo-800 text-white rounded text-xs font-semibold shadow transition">
+              Schedule Visit
+            </button>
+          `;
+        } else if (v.status === "SCHEDULED" || v.status === "DELAYED") {
+          actionBtns = `
+            <button onclick="openScheduleModal(${v.id}, 'RESCHEDULE')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium border border-slate-300 transition">
+              Reschedule
+            </button>
+            <button onclick="openCompleteEVCModal(${v.id})" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-semibold shadow transition ml-1">
+              Complete Visit
+            </button>
+          `;
+        } else {
+          actionBtns = `<span class="text-slate-400 text-xs">Closed</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50/70 transition">
+            <td class="px-6 py-3 font-semibold text-blue-900">
+              EVC #${v.id}
+              <div class="text-[10px] text-slate-400 font-mono">${API.escapeHtml(v.application_number || `App #${v.application_id}`)}</div>
+            </td>
+            <td class="px-6 py-3">
+              <div class="font-medium text-slate-800">${API.escapeHtml(v.institution_name || "Institution")}</div>
+              <div class="text-[10px] text-slate-400">${API.escapeHtml(v.region || "")}</div>
+            </td>
+            <td class="px-6 py-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadge}">${API.escapeHtml(v.status)}</span>
+            </td>
+            <td class="px-6 py-3">${dateText}</td>
+            <td class="px-6 py-3 text-slate-700">${teamText}</td>
+            <td class="px-6 py-3 text-right whitespace-nowrap">${actionBtns}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // -------------------------------------------------------------
+    // Render Undertaking Verifications
+    // -------------------------------------------------------------
+    function renderUndertakings() {
+      const tbody = document.getElementById("undertakings-verify-table-body");
+      const submitted = officerUndertakings.filter(u => u.status === "SUBMITTED");
+
+      document.getElementById("stat-undertakings-verify").textContent = submitted.length;
+
+      if (submitted.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400">No undertakings currently awaiting verification in your jurisdiction.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = submitted.map(u => `
+        <tr class="hover:bg-slate-50/70 transition">
+          <td class="px-6 py-3 font-mono font-semibold text-blue-900">${API.escapeHtml(u.application_number || `App #${u.application_id}`)}</td>
+          <td class="px-6 py-3 font-medium text-slate-800">${API.escapeHtml(u.description)}</td>
+          <td class="px-6 py-3">
+            <div class="font-mono text-slate-700 font-semibold">${API.escapeHtml(u.submitted_proof_reference || "N/A")}</div>
+            <div class="text-[10px] text-slate-400">Submitted: ${API.formatDate(u.submitted_at || u.updated_at)}</div>
+          </td>
+          <td class="px-6 py-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-300">AWAITING REVIEW</span>
+          </td>
+          <td class="px-6 py-3 text-right space-x-1 whitespace-nowrap">
+            <button onclick="confirmVerifyUndertaking(${u.id})" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-semibold shadow transition">
+              Verify Evidence
+            </button>
+            <button onclick="openRejectUndertakingModal(${u.id})" class="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-300 rounded text-xs font-medium transition">
+              Reject
+            </button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    // -------------------------------------------------------------
+    // Charts (Chart.js)
+    // -------------------------------------------------------------
+    function renderCharts() {
+      // 1. Stage Pendency
+      const stageCounts = {};
+      officerApps.forEach(a => {
+        if (a.status === "SUBMITTED" || a.status === "IN_REVIEW") {
+          const sName = a.current_stage ? a.current_stage.name : "Scrutiny";
+          stageCounts[sName] = (stageCounts[sName] || 0) + 1;
+        }
+      });
+
+      const stageLabels = Object.keys(stageCounts).length ? Object.keys(stageCounts) : ["Scrutiny Review", "EVC Inspection", "Appellate Committee", "Final Decision"];
+      const stageData = Object.keys(stageCounts).length ? Object.values(stageCounts) : [0, 0, 0, 0];
+
+      const ctxStage = document.getElementById("chart-stage-pendency").getContext("2d");
+      if (pendencyChart) pendencyChart.destroy();
+      pendencyChart = new Chart(ctxStage, {
+        type: "bar",
+        data: {
+          labels: stageLabels,
+          datasets: [{
+            label: "Applications in Queue",
+            data: stageData,
+            backgroundColor: "#1e3a8a",
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+
+      // 2. Status Breakdown
+      const statusCounts = { SUBMITTED: 0, IN_REVIEW: 0, APPROVED: 0, REJECTED: 0, RETURNED: 0 };
+      officerApps.forEach(a => {
+        if (statusCounts[a.status] !== undefined) statusCounts[a.status]++;
+      });
+
+      const ctxStatus = document.getElementById("chart-status-breakdown").getContext("2d");
+      if (statusChart) statusChart.destroy();
+      statusChart = new Chart(ctxStatus, {
+        type: "doughnut",
+        data: {
+          labels: ["Submitted", "In Review", "Approved", "Rejected", "Returned"],
+          datasets: [{
+            data: [
+              statusCounts.SUBMITTED,
+              statusCounts.IN_REVIEW,
+              statusCounts.APPROVED,
+              statusCounts.REJECTED,
+              statusCounts.RETURNED
+            ],
+            backgroundColor: ["#60a5fa", "#3b82f6", "#10b981", "#ef4444", "#f59e0b"],
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    // -------------------------------------------------------------
+    // Officer Modals & Action Handlers
+    // -------------------------------------------------------------
+    window.openCompleteStageModal = (appId) => {
+      const app = officerApps.find(a => a.id === appId);
+      if (!app) return;
+      document.getElementById("complete-app-id").value = app.id;
+      document.getElementById("complete-app-num").textContent = `${app.application_number} — ${app.title}`;
+      document.getElementById("complete-stage-name").textContent = app.current_stage ? app.current_stage.name : "Scrutiny";
+
+      const isFinal = app.current_stage && app.current_stage.is_final;
+      const decBox = document.getElementById("decision-box");
+      if (isFinal) {
+        decBox.classList.remove("hidden");
+      } else {
+        decBox.classList.add("hidden");
+      }
+
+      document.getElementById("complete-remarks").value = "";
+      document.getElementById("modal-complete-stage").classList.remove("hidden");
+    };
+
+    window.openReturnModal = (appId) => {
+      const app = officerApps.find(a => a.id === appId);
+      if (!app) return;
+      document.getElementById("return-app-id").value = app.id;
+      document.getElementById("return-app-num").textContent = `${app.application_number} — ${app.title}`;
+      document.getElementById("return-reason").value = "";
+      document.getElementById("modal-return-app").classList.remove("hidden");
+    };
+
+    window.openScheduleModal = (visitId, mode = "SCHEDULE") => {
+      const visit = officerEvc.find(v => v.id === visitId);
+      if (!visit) return;
+      document.getElementById("evc-visit-id").value = visit.id;
+      document.getElementById("evc-action-mode").value = mode;
+
+      if (mode === "RESCHEDULE") {
+        document.getElementById("evc-modal-title").textContent = "Reschedule EVC Inspection Visit";
+        document.getElementById("evc-remarks-label").textContent = "Substantive Rescheduling Justification *";
+        document.getElementById("evc-remarks").required = true;
+      } else {
+        document.getElementById("evc-modal-title").textContent = "Schedule EVC Inspection Visit";
+        document.getElementById("evc-remarks-label").textContent = "Officer Remarks / Terms of Reference";
+        document.getElementById("evc-remarks").required = false;
+      }
+
+      document.getElementById("evc-scheduled-date").value = visit.scheduled_date ? visit.scheduled_date.slice(0, 10) : "";
+      document.getElementById("evc-team-lead").value = visit.team_lead || "";
+      document.getElementById("evc-experts").value = visit.experts ? visit.experts.join(", ") : "";
+      document.getElementById("evc-remarks").value = "";
+
+      document.getElementById("modal-schedule-evc").classList.remove("hidden");
+    };
+
+    window.openCompleteEVCModal = (visitId) => {
+      document.getElementById("evc-comp-id").value = visitId;
+      document.getElementById("evc-comp-summary").value = "";
+      document.getElementById("evc-comp-deficiencies").value = "";
+      document.getElementById("modal-complete-evc").classList.remove("hidden");
+    };
+
+    window.confirmVerifyUndertaking = async (undertakingId) => {
+      if (!confirm("Are you sure you want to verify and approve this statutory undertaking evidence?")) return;
+      try {
+        await API.verifyUndertaking(undertakingId, "Statutory compliance verified by officer.");
+        API.showToast("Undertaking verified successfully!", "success");
+        fetchUndertakings();
+      } catch (err) {
+        API.showToast(err.message || "Failed to verify undertaking", "error");
+      }
+    };
+
+    window.openRejectUndertakingModal = (undertakingId) => {
+      document.getElementById("reject-u-id").value = undertakingId;
+      document.getElementById("reject-u-reason").value = "";
+      document.getElementById("modal-reject-undertaking").classList.remove("hidden");
+    };
+
+    function setupOfficerModals() {
+      // Complete Stage
+      const compModal = document.getElementById("modal-complete-stage");
+      document.getElementById("btn-close-complete-modal").onclick = () => compModal.classList.add("hidden");
+      document.getElementById("btn-cancel-complete-modal").onclick = () => compModal.classList.add("hidden");
+      document.getElementById("form-complete-stage").onsubmit = async (e) => {
+        e.preventDefault();
+        const appId = document.getElementById("complete-app-id").value;
+        const remarks = document.getElementById("complete-remarks").value.trim();
+        const app = officerApps.find(a => a.id === parseInt(appId));
+        const isFinal = app && app.current_stage && app.current_stage.is_final;
+        const decision = isFinal ? document.getElementById("complete-decision-select").value : undefined;
+
+        const btn = document.getElementById("btn-submit-complete");
+        btn.disabled = true;
+        btn.textContent = "Processing...";
+        try {
+          await API.completeStage(appId, { remarks, decision });
+          API.showToast("Application stage transition completed!", "success");
+          compModal.classList.add("hidden");
+          loadOfficerDashboardData();
+        } catch (err) {
+          API.showToast(err.message || "Failed to complete stage", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Confirm & Advance Stage";
+        }
+      };
+
+      // Return Application
+      const returnModal = document.getElementById("modal-return-app");
+      document.getElementById("btn-close-return-modal").onclick = () => returnModal.classList.add("hidden");
+      document.getElementById("btn-cancel-return-modal").onclick = () => returnModal.classList.add("hidden");
+      document.getElementById("form-return-app").onsubmit = async (e) => {
+        e.preventDefault();
+        const appId = document.getElementById("return-app-id").value;
+        const reason = document.getElementById("return-reason").value.trim();
+
+        const btn = document.getElementById("btn-submit-return");
+        btn.disabled = true;
+        btn.textContent = "Returning...";
+        try {
+          await API.returnApplication(appId, reason);
+          API.showToast("Application returned with deficiency notice", "warning");
+          returnModal.classList.add("hidden");
+          loadOfficerDashboardData();
+        } catch (err) {
+          API.showToast(err.message || "Failed to return application", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Return Application";
+        }
+      };
+
+      // Schedule/Reschedule EVC
+      const evcModal = document.getElementById("modal-schedule-evc");
+      document.getElementById("btn-close-evc-modal").onclick = () => evcModal.classList.add("hidden");
+      document.getElementById("btn-cancel-evc-modal").onclick = () => evcModal.classList.add("hidden");
+      document.getElementById("form-schedule-evc").onsubmit = async (e) => {
+        e.preventDefault();
+        const visitId = document.getElementById("evc-visit-id").value;
+        const mode = document.getElementById("evc-action-mode").value;
+        const date = document.getElementById("evc-scheduled-date").value;
+        const remarks = document.getElementById("evc-remarks").value.trim();
+
+        const btn = document.getElementById("btn-submit-evc");
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        try {
+          if (mode === "RESCHEDULE") {
+            await API.rescheduleEVC(visitId, {
+              new_date: date,
+              reason: remarks || "Administrative rescheduling",
+            });
+            API.showToast("EVC inspection rescheduled successfully!", "success");
+          } else {
+            const teamLead = document.getElementById("evc-team-lead").value.trim();
+            const expertsRaw = document.getElementById("evc-experts").value.trim();
+            const experts = expertsRaw ? expertsRaw.split(",").map(x => x.trim()).filter(Boolean) : [];
+            await API.scheduleEVC(visitId, {
+              scheduled_date: date,
+              team_lead: teamLead || undefined,
+              experts: experts,
+              remarks: remarks || undefined,
+            });
+            API.showToast("EVC inspection scheduled successfully!", "success");
+          }
+          evcModal.classList.add("hidden");
+          fetchEVCVisits();
+        } catch (err) {
+          API.showToast(err.message || "Failed to schedule EVC", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Confirm Schedule";
+        }
+      };
+
+      // Complete EVC
+      const compEvcModal = document.getElementById("modal-complete-evc");
+      document.getElementById("btn-close-evc-comp-modal").onclick = () => compEvcModal.classList.add("hidden");
+      document.getElementById("btn-cancel-evc-comp-modal").onclick = () => compEvcModal.classList.add("hidden");
+      document.getElementById("form-complete-evc").onsubmit = async (e) => {
+        e.preventDefault();
+        const visitId = document.getElementById("evc-comp-id").value;
+        const recommendation = document.getElementById("evc-comp-recommendation").value;
+        const summary = document.getElementById("evc-comp-summary").value.trim();
+        const deficiencies = document.getElementById("evc-comp-deficiencies").value.trim();
+
+        const btn = document.getElementById("btn-submit-evc-comp");
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        try {
+          await API.completeEVC(visitId, {
+            recommendation,
+            report_summary: summary,
+            deficiencies: deficiencies || undefined,
+          });
+          API.showToast("EVC inspection report completed and findings recorded!", "success");
+          compEvcModal.classList.add("hidden");
+          fetchEVCVisits();
+        } catch (err) {
+          API.showToast(err.message || "Failed to record EVC completion", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Complete Inspection Record";
+        }
+      };
+
+      // Reject Undertaking
+      const rejModal = document.getElementById("modal-reject-undertaking");
+      document.getElementById("btn-close-reject-u-modal").onclick = () => rejModal.classList.add("hidden");
+      document.getElementById("btn-cancel-reject-u-modal").onclick = () => rejModal.classList.add("hidden");
+      document.getElementById("form-reject-undertaking").onsubmit = async (e) => {
+        e.preventDefault();
+        const uId = document.getElementById("reject-u-id").value;
+        const reason = document.getElementById("reject-u-reason").value.trim();
+
+        const btn = document.getElementById("btn-submit-reject-u");
+        btn.disabled = true;
+        btn.textContent = "Rejecting...";
+
+        try {
+          await API.rejectUndertaking(uId, reason);
+          API.showToast("Undertaking evidence rejected and returned to institution", "warning");
+          rejModal.classList.add("hidden");
+          fetchUndertakings();
+        } catch (err) {
+          API.showToast(err.message || "Failed to reject undertaking", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Reject Evidence";
+        }
+      };
+    }
+  </script>
 </body>
 </html>

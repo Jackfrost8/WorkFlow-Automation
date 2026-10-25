@@ -116,6 +116,12 @@ async def serve_officer():
     return FileResponse(file) if file.exists() else FileResponse(FRONTEND_DIR / "index.html")
 
 
+@app.get("/bureau", include_in_schema=False)
+async def serve_bureau():
+    file = FRONTEND_DIR / "bureau.html"
+    return FileResponse(file) if file.exists() else FileResponse(FRONTEND_DIR / "index.html")
+
+
 @app.get("/admin", include_in_schema=False)
 async def serve_admin():
     file = FRONTEND_DIR / "admin.html"

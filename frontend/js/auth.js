@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const protectedRoutes = {
     "/institution": ["INSTITUTION"],
     "/officer": ["REGIONAL_OFFICER", "BUREAU_OFFICER"],
+    "/bureau": ["BUREAU_OFFICER", "ADMIN"],
     "/admin": ["ADMIN"],
   };
 
@@ -33,6 +34,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Update UI headers with current user info
     renderUserNavProfile(user);
+
+    // Initialize shared header components
+    window.API.initSimulatedTimeBadge();
+    window.API.initNotificationDrawer();
   }
 
   // Setup logout buttons
@@ -50,9 +55,11 @@ function renderUserNavProfile(user) {
   const roleEl = document.getElementById("nav-user-role");
   const emailEl = document.getElementById("nav-user-email");
   const regionEl = document.getElementById("nav-user-region");
+  const instIdEl = document.getElementById("nav-user-institution-id");
 
-  if (nameEl) nameEl.textContent = user.full_name;
-  if (roleEl) roleEl.textContent = user.role.replace("_", " ");
+  if (nameEl) nameEl.textContent = user.full_name || user.email;
+  if (roleEl) roleEl.textContent = user.role.replace(/_/g, " ");
   if (emailEl) emailEl.textContent = user.email;
   if (regionEl && user.region) regionEl.textContent = user.region;
+  if (instIdEl && user.institution_id) instIdEl.textContent = `ID #${user.institution_id}`;
 }

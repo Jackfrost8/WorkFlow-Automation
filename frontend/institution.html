@@ -3,83 +3,890 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Institution Portal — AICTE Workflow</title>
+  <title>Institution Portal — AICTE Statutory Workflow Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/static/css/custom.css">
 </head>
 <body class="min-h-screen bg-slate-50 flex flex-col justify-between">
 
-  <!-- Header -->
-  <header class="gradient-header text-white shadow-md">
+  <!-- Top Global Header -->
+  <header class="gradient-header text-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-blue-900 shadow text-sm">AICTE</a>
         <div>
           <h1 class="text-base sm:text-lg font-bold">Institution Portal</h1>
-          <p class="text-xs text-blue-200">Campus Approval &amp; Compliance Center</p>
+          <p class="text-xs text-blue-200">Institutional Approval &amp; Compliance Center</p>
         </div>
       </div>
 
-      <!-- User Nav Profile -->
-      <div class="flex items-center space-x-4 text-xs">
-        <div class="text-right hidden sm:block">
-          <p id="nav-user-name" class="font-semibold text-white">Loading...</p>
-          <p class="text-blue-200"><span id="nav-user-role">INSTITUTION</span> &bull; <span id="nav-user-email"></span></p>
+      <!-- Time Simulation & Notification Controls -->
+      <div class="flex items-center space-x-3">
+        <!-- Simulated Time Pill Badge -->
+        <div id="simulated-time-badge" class="hidden"></div>
+
+        <!-- Notification Bell -->
+        <div class="relative">
+          <button id="btn-notification-bell" class="p-2 rounded-full bg-white/10 hover:bg-white/20 transition relative">
+            <span class="text-base">🔔</span>
+            <span id="notification-unread-count" class="hidden absolute -top-1 -right-1 bg-red-500 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
+          </button>
         </div>
-        <button class="btn-logout px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded border border-white/20 transition">
+
+        <!-- User Profile Pill -->
+        <div class="text-right hidden sm:block border-l border-white/20 pl-3">
+          <p id="nav-user-name" class="font-semibold text-xs text-white">Loading...</p>
+          <p class="text-[11px] text-blue-200">
+            <span id="nav-user-role">INSTITUTION</span> &bull; <span id="nav-user-region">Assigned Region</span>
+          </p>
+        </div>
+
+        <button class="btn-logout px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-medium border border-white/20 transition">
           Sign Out
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Content -->
+  <!-- Notification Drawer (Slide-Over) -->
+  <div id="notification-drawer" class="hidden fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-sm flex justify-end">
+    <div class="w-full max-w-md bg-white h-full shadow-2xl flex flex-col">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">🔔</span>
+          <h3 class="font-bold text-slate-800 text-sm">Notifications</h3>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="btn-mark-all-read" class="text-xs text-blue-700 hover:underline">Mark all read</button>
+          <button id="btn-close-notifications" class="text-slate-400 hover:text-slate-600 font-bold text-xl px-2">&times;</button>
+        </div>
+      </div>
+      <div id="notification-drawer-list" class="flex-grow overflow-y-auto divide-y divide-slate-100">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
-    
-    <!-- Welcome Banner -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+    <!-- Welcome & Overview Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 uppercase tracking-wide">
-          Institution Workspace
-        </span>
-        <h2 class="text-2xl font-bold text-slate-800 mt-2">Institutional Dashboard</h2>
+        <div class="inline-flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 uppercase tracking-wide">
+            Statutory Approval Portal
+          </span>
+          <span id="institution-badge" class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium">
+            Jurisdiction Isolated
+          </span>
+        </div>
+        <h2 id="institution-heading" class="text-2xl font-bold text-slate-800 mt-2">Institutional Dashboard</h2>
         <p class="text-xs text-slate-500 mt-1">
-          Region: <span id="nav-user-region" class="font-semibold text-slate-700">Assigned Jurisdiction</span>
+          Submit expansion proposals, track scrutiny/EVC stages, upload statutory undertakings, and maintain compliance leases.
         </p>
       </div>
-      <div class="flex items-center space-x-3">
-        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold">
-          Role Verified
-        </span>
+      <div class="flex flex-wrap gap-2">
+        <button id="btn-open-submit-modal" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1.5">
+          <span>➕</span>
+          <span>New Application</span>
+        </button>
+        <button id="btn-open-upload-modal" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1.5">
+          <span>📄</span>
+          <span>Upload Document</span>
+        </button>
       </div>
     </div>
 
-    <!-- Quick Actions & Status Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Summary Metrics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-        <div class="text-xs text-slate-500 uppercase font-semibold">Active Applications</div>
-        <div class="text-3xl font-extrabold text-slate-900 mt-2">0</div>
-        <p class="text-xs text-slate-400 mt-1">Application submission opens in Phase 3</p>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Applications</span>
+          <span class="text-xl">📁</span>
+        </div>
+        <div id="stat-apps-count" class="text-3xl font-extrabold text-slate-900 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Under Scrutiny or Inspection</p>
       </div>
+
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-        <div class="text-xs text-slate-500 uppercase font-semibold">Compliance Documents</div>
-        <div class="text-3xl font-extrabold text-slate-900 mt-2">0</div>
-        <p class="text-xs text-slate-400 mt-1">Lease &amp; undertaking tracking in Phase 4</p>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Undertakings</span>
+          <span class="text-xl">✍️</span>
+        </div>
+        <div id="stat-undertakings-count" class="text-3xl font-extrabold text-amber-600 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Evidence submission required</p>
       </div>
+
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-        <div class="text-xs text-slate-500 uppercase font-semibold">Upcoming Deadlines</div>
-        <div class="text-3xl font-extrabold text-emerald-600 mt-2">None</div>
-        <p class="text-xs text-slate-400 mt-1">SLA escalation engine in Phase 5</p>
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Expiring Documents</span>
+          <span class="text-xl">⏳</span>
+        </div>
+        <div id="stat-expiring-docs-count" class="text-3xl font-extrabold text-rose-600 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Expiring within 30 days / Expired</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Approved Decisions</span>
+          <span class="text-xl">🏆</span>
+        </div>
+        <div id="stat-approved-count" class="text-3xl font-extrabold text-emerald-600 mt-2">0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Final Approval Granted</p>
+      </div>
+    </div>
+
+    <!-- Section 1: Active Applications -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Institutional Approval Applications</h3>
+          <p class="text-xs text-slate-500">Live stage tracking across Scrutiny, EVC, and SAC approval workflows</p>
+        </div>
+        <button id="btn-refresh-apps" class="text-xs text-blue-900 font-semibold hover:underline flex items-center space-x-1">
+          <span>🔄</span> <span>Refresh</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Application No.</th>
+              <th class="px-6 py-3">Title &amp; Academic Year</th>
+              <th class="px-6 py-3">Route Type</th>
+              <th class="px-6 py-3">Current Stage</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3">Stage Deadline</th>
+              <th class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="applications-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="7" class="px-6 py-6 text-center text-slate-400">Loading applications...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 2: Statutory Undertakings -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Statutory Compliance Undertakings</h3>
+          <p class="text-xs text-slate-500">Regulatory affidavits, infrastructure undertakings, and required compliance proofs</p>
+        </div>
+        <button id="btn-refresh-undertakings" class="text-xs text-blue-900 font-semibold hover:underline flex items-center space-x-1">
+          <span>🔄</span> <span>Refresh</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Requirement / Description</th>
+              <th class="px-6 py-3">Application Ref</th>
+              <th class="px-6 py-3">Due Date</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3">Proof / Remarks</th>
+              <th class="px-6 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="undertakings-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="6" class="px-6 py-6 text-center text-slate-400">Loading statutory undertakings...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 3: Documents & Land Leases -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Compliance Documents &amp; Land Leases</h3>
+          <p class="text-xs text-slate-500">Statutory land lease agreements, fire safety certificates, and building approvals</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button id="btn-open-upload-modal-2" class="text-xs bg-emerald-50 text-emerald-800 font-semibold px-2.5 py-1 rounded border border-emerald-200 hover:bg-emerald-100 transition">
+            + Upload Document
+          </button>
+          <button id="btn-refresh-docs" class="text-xs text-blue-900 font-semibold hover:underline flex items-center space-x-1">
+            <span>🔄</span> <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Title &amp; Classification</th>
+              <th class="px-6 py-3">Issue Date</th>
+              <th class="px-6 py-3">Expiry Date</th>
+              <th class="px-6 py-3">Validity Status</th>
+              <th class="px-6 py-3">Verification</th>
+              <th class="px-6 py-3 text-right">Download</th>
+            </tr>
+          </thead>
+          <tbody id="documents-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="6" class="px-6 py-6 text-center text-slate-400">Loading compliance documents...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
   </main>
 
+  <!-- Modal: Submit New Application -->
+  <div id="modal-submit-app" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-slate-800">Submit Institutional Application</h3>
+        <button id="btn-close-app-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-submit-app" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Approval Route Type</label>
+          <select id="app-route-type" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-800">
+            <option value="SCRUTINY_EVC">Scrutiny + EVC Inspection Route (Standard)</option>
+            <option value="ONLY_SCRUTINY">Only Scrutiny Approval Route (Streamlined)</option>
+            <option value="EVC_SAC">EVC + Standing Appellate Committee (Appeals)</option>
+            <option value="ONLY_EVC">Only EVC Physical Verification (Direct Visit)</option>
+          </select>
+          <p class="text-[11px] text-slate-400 mt-1">Configured route defines statutory stages and SLA targets.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Application Title / Expansion Scope</label>
+          <input type="text" id="app-title" required placeholder="e.g. Establishment of New Department of Computer Science"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Academic Year</label>
+          <input type="text" id="app-academic-year" value="2026-2027" required
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Brief Description &amp; Justification</label>
+          <textarea id="app-description" rows="3" placeholder="Brief outline of proposed institutional infrastructure, faculty preparedness, and land documentation..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-app-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-save-app" class="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow">
+            Submit Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Upload Compliance Document -->
+  <div id="modal-upload-doc" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-slate-800">Upload Statutory Compliance Document</h3>
+        <button id="btn-close-upload-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-upload-doc" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Document Classification</label>
+          <select id="doc-type" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-800">
+            <option value="LAND_LEASE">Land Lease / Ownership Deed</option>
+            <option value="FIRE_SAFETY">Fire Safety NOC</option>
+            <option value="BUILDING_COMPLETION">Building Completion Certificate</option>
+            <option value="AFFIDAVIT_UNDERTAKING">Statutory Affidavit / Undertaking</option>
+            <option value="AICTE_APPROVAL_PREV">Previous AICTE Approval Order</option>
+            <option value="UNDERTAKING_EVIDENCE">Compliance Verification Evidence</option>
+            <option value="OTHER">Other Compliance Document</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Document Title</label>
+          <input type="text" id="doc-title" required placeholder="e.g. Registered Campus 99-Year Lease Agreement"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Associated Application (Optional)</label>
+          <select id="doc-app-id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-800">
+            <option value="">General Institutional Compliance (No specific application)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Issue Date</label>
+            <input type="date" id="doc-issue-date" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Expiry Date</label>
+            <input type="date" id="doc-expiry-date" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Select File (.PDF, .PNG, .JPG up to 10MB)</label>
+          <input type="file" id="doc-file" required accept=".pdf,.png,.jpg,.jpeg"
+                 class="w-full text-xs text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+          <p class="text-[11px] text-slate-400 mt-1">Verified via magic byte signature check and sanitized storage.</p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-upload-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-upload" class="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow">
+            Upload Document
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Submit Undertaking Evidence -->
+  <div id="modal-submit-evidence" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-slate-800">Submit Undertaking Compliance Proof</h3>
+        <button id="btn-close-evidence-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-submit-evidence" class="mt-4 space-y-4">
+        <input type="hidden" id="evidence-undertaking-id">
+
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700">
+          <div class="font-bold text-slate-800 mb-1">Requirement:</div>
+          <p id="evidence-undertaking-desc" class="text-slate-600 italic"></p>
+          <div class="mt-2 text-[11px] text-slate-500">
+            Due Date: <span id="evidence-undertaking-due" class="font-semibold text-slate-700"></span>
+          </div>
+          <div id="evidence-rejection-box" class="hidden mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-800 text-[11px]">
+            <strong>Previous Rejection Reason:</strong> <span id="evidence-rejection-reason"></span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Submitted Proof Reference / URL / Dispatch ID</label>
+          <input type="text" id="evidence-proof-ref" required placeholder="e.g. DOC-REF-2026-FIRE-NOC-0881 or Registry Dispatch #449"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Submission Remarks</label>
+          <textarea id="evidence-remarks" rows="2" placeholder="Explanatory notes regarding how this evidence satisfies statutory compliance..."
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-evidence-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-save-evidence" class="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow">
+            Submit Compliance Evidence
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Application Details & Timeline -->
+  <div id="modal-app-details" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <div>
+          <h3 id="detail-app-num" class="text-base font-bold text-slate-800">Application Details</h3>
+          <p id="detail-app-sub" class="text-xs text-slate-500"></p>
+        </div>
+        <button id="btn-close-details-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="mt-4 flex-grow overflow-y-auto space-y-5 text-xs text-slate-700">
+        <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div><span class="text-slate-400">Current Stage:</span> <strong id="detail-stage" class="text-slate-800"></strong></div>
+          <div><span class="text-slate-400">Application Status:</span> <strong id="detail-status" class="text-slate-800"></strong></div>
+          <div><span class="text-slate-400">Current Deadline:</span> <span id="detail-deadline" class="text-slate-800"></span></div>
+          <div><span class="text-slate-400">Submission Date:</span> <span id="detail-submission" class="text-slate-800"></span></div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-800 uppercase tracking-wider text-[11px] mb-2">Stage Progression &amp; History Audit</h4>
+          <div id="detail-history-list" class="space-y-2 border-l-2 border-blue-900 pl-4 ml-2">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 flex justify-end">
+        <button id="btn-close-details-modal-2" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <footer class="bg-slate-900 text-slate-400 py-4 text-center text-xs">
-    AICTE Workflow Automation Platform &bull; Phase 2 Authentication Active
+    AICTE Workflow Automation Platform &bull; Statutory Compliance &amp; Approval System
   </footer>
 
   <script src="/static/js/api.js"></script>
   <script src="/static/js/auth.js"></script>
+  <script>
+    let currentApplications = [];
+    let currentUndertakings = [];
+    let currentDocuments = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      loadAllDashboardData();
+
+      // Refresh listeners
+      document.getElementById("btn-refresh-apps").onclick = loadApplications;
+      document.getElementById("btn-refresh-undertakings").onclick = loadUndertakings;
+      document.getElementById("btn-refresh-docs").onclick = loadDocuments;
+
+      // Modal Triggers
+      setupModals();
+    });
+
+    async function loadAllDashboardData() {
+      await Promise.all([
+        loadApplications(),
+        loadUndertakings(),
+        loadDocuments()
+      ]);
+    }
+
+    // -------------------------------------------------------------
+    // Applications Loading & Rendering
+    // -------------------------------------------------------------
+    async function loadApplications() {
+      const tbody = document.getElementById("applications-table-body");
+      try {
+        const apps = await API.getApplications();
+        currentApplications = apps || [];
+
+        // Update stats
+        const activeCount = currentApplications.filter(a => a.status === "SUBMITTED" || a.status === "IN_REVIEW").length;
+        const approvedCount = currentApplications.filter(a => a.status === "APPROVED").length;
+        document.getElementById("stat-apps-count").textContent = activeCount;
+        document.getElementById("stat-approved-count").textContent = approvedCount;
+
+        // Populate doc upload modal app dropdown
+        const appSelect = document.getElementById("doc-app-id");
+        appSelect.innerHTML = `<option value="">General Institutional Compliance (No specific application)</option>`;
+        currentApplications.forEach(a => {
+          appSelect.innerHTML += `<option value="${a.id}">${API.escapeHtml(a.application_number)} — ${API.escapeHtml(a.title)}</option>`;
+        });
+
+        if (currentApplications.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="px-6 py-8 text-center text-slate-400">
+                <div class="text-2xl mb-1">📄</div>
+                No applications submitted yet. Click <strong>"New Application"</strong> to begin.
+              </td>
+            </tr>`;
+          return;
+        }
+
+        tbody.innerHTML = currentApplications.map(app => {
+          let statusBadge = "bg-slate-100 text-slate-800 border-slate-200";
+          if (app.status === "APPROVED") statusBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
+          else if (app.status === "REJECTED") statusBadge = "bg-red-100 text-red-800 border-red-300";
+          else if (app.status === "IN_REVIEW") statusBadge = "bg-blue-100 text-blue-800 border-blue-300";
+          else if (app.status === "RETURNED") statusBadge = "bg-amber-100 text-amber-800 border-amber-300";
+
+          // Deadline calculation
+          let deadlineHtml = '<span class="text-slate-400">N/A</span>';
+          if (app.current_stage_deadline) {
+            const rel = API.formatRelativeDays(app.current_stage_deadline);
+            const isOverdue = rel.includes("overdue");
+            const badgeClass = isOverdue ? "bg-red-50 text-red-700 border-red-200 font-bold" : "bg-slate-50 text-slate-700 border-slate-200";
+            deadlineHtml = `
+              <div>
+                <span class="px-2 py-0.5 rounded text-[10px] border ${badgeClass}">${API.escapeHtml(rel)}</span>
+                <div class="text-[10px] text-slate-400 mt-0.5">${API.formatDateOnly(app.current_stage_deadline)}</div>
+              </div>
+            `;
+          }
+
+          const stageName = app.current_stage ? app.current_stage.name : (app.status === "APPROVED" ? "Completed" : "Initial Scrutiny");
+
+          return `
+            <tr class="hover:bg-slate-50/70 transition">
+              <td class="px-6 py-3 font-semibold text-blue-900">${API.escapeHtml(app.application_number)}</td>
+              <td class="px-6 py-3">
+                <div class="font-medium text-slate-800">${API.escapeHtml(app.title)}</div>
+                <div class="text-[10px] text-slate-400">${API.escapeHtml(app.academic_year)}</div>
+              </td>
+              <td class="px-6 py-3">
+                <span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">${API.escapeHtml(app.route_type || "SCRUTINY_EVC")}</span>
+              </td>
+              <td class="px-6 py-3 font-medium text-slate-800">${API.escapeHtml(stageName)}</td>
+              <td class="px-6 py-3">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadge}">${API.escapeHtml(app.status)}</span>
+              </td>
+              <td class="px-6 py-3">${deadlineHtml}</td>
+              <td class="px-6 py-3 text-right">
+                <button onclick="viewApplicationDetails(${app.id})" class="px-2.5 py-1 bg-blue-50 text-blue-800 hover:bg-blue-100 rounded text-xs font-medium border border-blue-200 transition">
+                  Timeline
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Failed to load applications: ${API.escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Undertakings Loading & Evidence Submission
+    // -------------------------------------------------------------
+    async function loadUndertakings() {
+      const tbody = document.getElementById("undertakings-table-body");
+      try {
+        const undertakings = await API.getUndertakings();
+        currentUndertakings = undertakings || [];
+
+        const pendingCount = currentUndertakings.filter(u => u.status === "PENDING" || u.status === "REJECTED").length;
+        document.getElementById("stat-undertakings-count").textContent = pendingCount;
+
+        if (currentUndertakings.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                <div class="text-2xl mb-1">✍️</div>
+                No statutory undertakings issued for your institution.
+              </td>
+            </tr>`;
+          return;
+        }
+
+        tbody.innerHTML = currentUndertakings.map(u => {
+          let statusBadge = "bg-slate-100 text-slate-700 border-slate-200";
+          if (u.status === "VERIFIED") statusBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
+          else if (u.status === "SUBMITTED") statusBadge = "bg-blue-100 text-blue-800 border-blue-300";
+          else if (u.status === "REJECTED") statusBadge = "bg-red-100 text-red-800 border-red-300";
+          else if (u.status === "PENDING") statusBadge = "bg-amber-100 text-amber-800 border-amber-300";
+
+          const relDue = API.formatRelativeDays(u.due_date);
+          const isOverdue = relDue.includes("overdue");
+          const dueClass = isOverdue ? "text-red-700 font-bold" : "text-slate-700";
+
+          let proofText = `<span class="text-slate-400">None</span>`;
+          if (u.submitted_proof_reference) {
+            proofText = `<span class="font-mono text-slate-800">${API.escapeHtml(u.submitted_proof_reference)}</span>`;
+          }
+          if (u.rejection_reason && u.status === "REJECTED") {
+            proofText += `<div class="text-[10px] text-red-600 font-medium mt-0.5">Deficiency: ${API.escapeHtml(u.rejection_reason)}</div>`;
+          }
+
+          let actionHtml = `<span class="text-slate-400 text-xs">Locked</span>`;
+          if (u.status === "PENDING" || u.status === "REJECTED") {
+            actionHtml = `
+              <button onclick="openEvidenceModal(${u.id})" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-medium shadow transition">
+                ${u.status === "REJECTED" ? "Resubmit Proof" : "Submit Proof"}
+              </button>
+            `;
+          } else if (u.status === "SUBMITTED") {
+            actionHtml = `<span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] font-medium border border-blue-200">Awaiting Verification</span>`;
+          } else if (u.status === "VERIFIED") {
+            actionHtml = `<span class="text-emerald-700 font-bold text-xs">✓ Verified</span>`;
+          }
+
+          return `
+            <tr class="hover:bg-slate-50/70 transition">
+              <td class="px-6 py-3 font-medium text-slate-800">${API.escapeHtml(u.description)}</td>
+              <td class="px-6 py-3 font-mono text-blue-900">${API.escapeHtml(u.application_number || `App #${u.application_id}`)}</td>
+              <td class="px-6 py-3">
+                <span class="${dueClass}">${API.formatDateOnly(u.due_date)}</span>
+                <div class="text-[10px] text-slate-400">${API.escapeHtml(relDue)}</div>
+              </td>
+              <td class="px-6 py-3">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadge}">${API.escapeHtml(u.status)}</span>
+              </td>
+              <td class="px-6 py-3">${proofText}</td>
+              <td class="px-6 py-3 text-right">${actionHtml}</td>
+            </tr>
+          `;
+        }).join("");
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load undertakings: ${API.escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Documents Loading
+    // -------------------------------------------------------------
+    async function loadDocuments() {
+      const tbody = document.getElementById("documents-table-body");
+      try {
+        const docs = await API.getDocuments();
+        currentDocuments = docs || [];
+
+        // Count expiring or expired documents
+        const expiringCount = currentDocuments.filter(d => {
+          if (d.status === "EXPIRED") return true;
+          if (!d.expiry_date) return false;
+          const diffDays = Math.round((new Date(d.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+          return diffDays <= 30;
+        }).length;
+        document.getElementById("stat-expiring-docs-count").textContent = expiringCount;
+
+        if (currentDocuments.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                <div class="text-2xl mb-1">📜</div>
+                No compliance documents uploaded yet.
+              </td>
+            </tr>`;
+          return;
+        }
+
+        tbody.innerHTML = currentDocuments.map(doc => {
+          let statusBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
+          if (doc.status === "EXPIRED") statusBadge = "bg-red-100 text-red-800 border-red-300";
+          else if (doc.status === "ARCHIVED") statusBadge = "bg-slate-100 text-slate-700 border-slate-300";
+
+          // Expiry date color code
+          let expiryHtml = `<span class="text-slate-400">Perpetual</span>`;
+          if (doc.expiry_date) {
+            const rel = API.formatRelativeDays(doc.expiry_date);
+            const isExpired = rel.includes("overdue") || doc.status === "EXPIRED";
+            const isNear = !isExpired && rel.includes("day") && parseInt(rel.replace(/\D/g, "")) <= 30;
+            let color = isExpired ? "text-red-700 font-bold" : (isNear ? "text-amber-700 font-semibold" : "text-slate-700");
+            expiryHtml = `
+              <span class="${color}">${API.formatDateOnly(doc.expiry_date)}</span>
+              <div class="text-[10px] ${color}">${API.escapeHtml(rel)}</div>
+            `;
+          }
+
+          let verifyBadge = "bg-slate-100 text-slate-700";
+          if (doc.verification_status === "VERIFIED") verifyBadge = "bg-emerald-100 text-emerald-800";
+          else if (doc.verification_status === "REJECTED") verifyBadge = "bg-red-100 text-red-800";
+          else if (doc.verification_status === "PENDING") verifyBadge = "bg-amber-100 text-amber-800";
+
+          return `
+            <tr class="hover:bg-slate-50/70 transition">
+              <td class="px-6 py-3">
+                <div class="font-medium text-slate-800">${API.escapeHtml(doc.title)}</div>
+                <div class="text-[10px] font-mono text-slate-400">${API.escapeHtml(doc.doc_type)} &bull; ${doc.file_size_bytes ? Math.round(doc.file_size_bytes / 1024) + ' KB' : ''}</div>
+              </td>
+              <td class="px-6 py-3 text-slate-700">${API.formatDateOnly(doc.issue_date)}</td>
+              <td class="px-6 py-3">${expiryHtml}</td>
+              <td class="px-6 py-3">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadge}">${API.escapeHtml(doc.status)}</span>
+              </td>
+              <td class="px-6 py-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-medium ${verifyBadge}">${API.escapeHtml(doc.verification_status)}</span>
+              </td>
+              <td class="px-6 py-3 text-right">
+                <a href="/api/documents/${doc.id}/download?token=${encodeURIComponent(API.getToken())}" target="_blank"
+                   class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium border border-slate-200 transition">
+                  ⬇️ File
+                </a>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load documents: ${API.escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Application Details Modal
+    // -------------------------------------------------------------
+    window.viewApplicationDetails = async (appId) => {
+      try {
+        const app = await API.getApplication(appId);
+        document.getElementById("detail-app-num").textContent = `${app.application_number} — ${app.title}`;
+        document.getElementById("detail-app-sub").textContent = `Route: ${app.route_type} | Academic Year: ${app.academic_year}`;
+        document.getElementById("detail-stage").textContent = app.current_stage ? app.current_stage.name : "N/A";
+        document.getElementById("detail-status").textContent = app.status;
+        document.getElementById("detail-deadline").textContent = API.formatDate(app.current_stage_deadline);
+        document.getElementById("detail-submission").textContent = API.formatDate(app.submission_date || app.created_at);
+
+        const histList = document.getElementById("detail-history-list");
+        if (!app.stage_history || app.stage_history.length === 0) {
+          histList.innerHTML = `<p class="text-slate-400 italic">No stage transitions recorded yet.</p>`;
+        } else {
+          histList.innerHTML = app.stage_history.map(h => `
+            <div class="relative pl-3 pb-3 border-b border-slate-100 last:border-0">
+              <div class="flex items-center space-x-2">
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">${API.escapeHtml(h.action)}</span>
+                <span class="text-slate-400 text-[10px]">${API.formatDate(h.entered_at)}</span>
+              </div>
+              <p class="text-slate-700 mt-1">${h.remarks ? API.escapeHtml(h.remarks) : '<span class="text-slate-400 italic">No officer remarks</span>'}</p>
+            </div>
+          `).join("");
+        }
+
+        document.getElementById("modal-app-details").classList.remove("hidden");
+      } catch (err) {
+        API.showToast(err.message || "Could not load application details", "error");
+      }
+    };
+
+    // -------------------------------------------------------------
+    // Evidence Submission Modal Handling
+    // -------------------------------------------------------------
+    window.openEvidenceModal = (undertakingId) => {
+      const u = currentUndertakings.find(item => item.id === undertakingId);
+      if (!u) return;
+      document.getElementById("evidence-undertaking-id").value = u.id;
+      document.getElementById("evidence-undertaking-desc").textContent = u.description;
+      document.getElementById("evidence-undertaking-due").textContent = API.formatDateOnly(u.due_date);
+
+      const rejBox = document.getElementById("evidence-rejection-box");
+      if (u.rejection_reason && u.status === "REJECTED") {
+        document.getElementById("evidence-rejection-reason").textContent = u.rejection_reason;
+        rejBox.classList.remove("hidden");
+      } else {
+        rejBox.classList.add("hidden");
+      }
+
+      document.getElementById("evidence-proof-ref").value = u.submitted_proof_reference || "";
+      document.getElementById("evidence-remarks").value = "";
+      document.getElementById("modal-submit-evidence").classList.remove("hidden");
+    };
+
+    // -------------------------------------------------------------
+    // Modals Initialization & Form Submissions
+    // -------------------------------------------------------------
+    function setupModals() {
+      // New App Modal
+      const appModal = document.getElementById("modal-submit-app");
+      document.getElementById("btn-open-submit-modal").onclick = () => appModal.classList.remove("hidden");
+      document.getElementById("btn-close-app-modal").onclick = () => appModal.classList.add("hidden");
+      document.getElementById("btn-cancel-app-modal").onclick = () => appModal.classList.add("hidden");
+
+      document.getElementById("form-submit-app").onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("btn-save-app");
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+        try {
+          const payload = {
+            route_type: document.getElementById("app-route-type").value,
+            title: document.getElementById("app-title").value.trim(),
+            academic_year: document.getElementById("app-academic-year").value.trim(),
+            description: document.getElementById("app-description").value.trim() || undefined,
+          };
+          const created = await API.createApplication(payload);
+          API.showToast(`Application ${created.application_number} submitted successfully!`, "success");
+          appModal.classList.add("hidden");
+          document.getElementById("form-submit-app").reset();
+          loadApplications();
+        } catch (err) {
+          API.showToast(err.message || "Failed to submit application", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Submit Application";
+        }
+      };
+
+      // Upload Document Modal
+      const docModal = document.getElementById("modal-upload-doc");
+      const openDocModal = () => docModal.classList.remove("hidden");
+      document.getElementById("btn-open-upload-modal").onclick = openDocModal;
+      document.getElementById("btn-open-upload-modal-2").onclick = openDocModal;
+      document.getElementById("btn-close-upload-modal").onclick = () => docModal.classList.add("hidden");
+      document.getElementById("btn-cancel-upload-modal").onclick = () => docModal.classList.add("hidden");
+
+      document.getElementById("form-upload-doc").onsubmit = async (e) => {
+        e.preventDefault();
+        const fileInput = document.getElementById("doc-file");
+        if (!fileInput.files || fileInput.files.length === 0) {
+          API.showToast("Please choose a file to upload", "warning");
+          return;
+        }
+
+        const btn = document.getElementById("btn-submit-upload");
+        btn.disabled = true;
+        btn.textContent = "Uploading...";
+
+        try {
+          const formData = new FormData();
+          formData.append("file", fileInput.files[0]);
+          formData.append("doc_type", document.getElementById("doc-type").value);
+          formData.append("title", document.getElementById("doc-title").value.trim());
+
+          const appId = document.getElementById("doc-app-id").value;
+          if (appId) formData.append("application_id", appId);
+
+          const issueDate = document.getElementById("doc-issue-date").value;
+          if (issueDate) formData.append("issue_date", issueDate);
+
+          const expiryDate = document.getElementById("doc-expiry-date").value;
+          if (expiryDate) formData.append("expiry_date", expiryDate);
+
+          await API.uploadDocument(formData);
+          API.showToast("Compliance document uploaded successfully!", "success");
+          docModal.classList.add("hidden");
+          document.getElementById("form-upload-doc").reset();
+          loadDocuments();
+        } catch (err) {
+          API.showToast(err.message || "Failed to upload document", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Upload Document";
+        }
+      };
+
+      // Evidence Submission Modal
+      const evidenceModal = document.getElementById("modal-submit-evidence");
+      document.getElementById("btn-close-evidence-modal").onclick = () => evidenceModal.classList.add("hidden");
+      document.getElementById("btn-cancel-evidence-modal").onclick = () => evidenceModal.classList.add("hidden");
+
+      document.getElementById("form-submit-evidence").onsubmit = async (e) => {
+        e.preventDefault();
+        const undertakingId = document.getElementById("evidence-undertaking-id").value;
+        const proofRef = document.getElementById("evidence-proof-ref").value.trim();
+        const remarks = document.getElementById("evidence-remarks").value.trim();
+
+        const btn = document.getElementById("btn-save-evidence");
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+
+        try {
+          await API.submitUndertakingEvidence(undertakingId, {
+            submitted_proof_reference: proofRef,
+            submission_remarks: remarks || undefined,
+          });
+          API.showToast("Compliance proof submitted for officer verification!", "success");
+          evidenceModal.classList.add("hidden");
+          loadUndertakings();
+        } catch (err) {
+          API.showToast(err.message || "Failed to submit evidence", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Submit Compliance Evidence";
+        }
+      };
+
+      // App Details Modal
+      const detailsModal = document.getElementById("modal-app-details");
+      document.getElementById("btn-close-details-modal").onclick = () => detailsModal.classList.add("hidden");
+      document.getElementById("btn-close-details-modal-2").onclick = () => detailsModal.classList.add("hidden");
+    }
+  </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — AICTE Workflow Automation</title>
+  <title>Login — AICTE Statutory Workflow Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/static/css/custom.css">
 </head>
@@ -16,7 +16,7 @@
         AICTE
       </div>
       <h2 class="text-2xl font-bold text-slate-900">Sign in to AICTE Portal</h2>
-      <p class="text-xs text-slate-500 mt-1">Institutional Approval &amp; Lifecycle Management Platform</p>
+      <p class="text-xs text-slate-500 mt-1">Institutional Approval &amp; Regulatory Lifecycle Platform</p>
     </div>
 
     <!-- Alert Box -->
@@ -47,21 +47,37 @@
         1-Click Demo Login
       </p>
       <div class="grid grid-cols-2 gap-2 text-xs">
-        <button type="button" onclick="fillCredentials('admin@aicte.gov.in')"
-                class="px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium rounded border border-purple-200 transition text-left">
-          👑 Admin
-        </button>
-        <button type="button" onclick="fillCredentials('bureau@aicte.gov.in')"
-                class="px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded border border-blue-200 transition text-left">
-          🏛️ Bureau Officer
+        <button type="button" onclick="fillCredentials('inst.dtu@aicte.gov.in')"
+                class="px-2.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-medium rounded border border-amber-200 transition text-left flex items-center space-x-1.5">
+          <span>🎓</span>
+          <div>
+            <div class="font-bold leading-tight">Institution</div>
+            <div class="text-[10px] text-amber-600">Delhi Tech Univ</div>
+          </div>
         </button>
         <button type="button" onclick="fillCredentials('ro.north@aicte.gov.in')"
-                class="px-2 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-medium rounded border border-sky-200 transition text-left">
-          ⚖️ Regional Officer
+                class="px-2.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-800 font-medium rounded border border-sky-200 transition text-left flex items-center space-x-1.5">
+          <span>⚖️</span>
+          <div>
+            <div class="font-bold leading-tight">Regional Officer</div>
+            <div class="text-[10px] text-sky-600">North Jurisdiction</div>
+          </div>
         </button>
-        <button type="button" onclick="fillCredentials('inst.dtu@aicte.gov.in')"
-                class="px-2 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium rounded border border-amber-200 transition text-left">
-          🎓 Institution (DTU)
+        <button type="button" onclick="fillCredentials('bureau@aicte.gov.in')"
+                class="px-2.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 font-medium rounded border border-blue-200 transition text-left flex items-center space-x-1.5">
+          <span>🏛️</span>
+          <div>
+            <div class="font-bold leading-tight">Bureau Officer</div>
+            <div class="text-[10px] text-blue-600">HQ Oversight</div>
+          </div>
+        </button>
+        <button type="button" onclick="fillCredentials('admin@aicte.gov.in')"
+                class="px-2.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-800 font-medium rounded border border-purple-200 transition text-left flex items-center space-x-1.5">
+          <span>👑</span>
+          <div>
+            <div class="font-bold leading-tight">Administrator</div>
+            <div class="text-[10px] text-purple-600">Full System Access</div>
+          </div>
         </button>
       </div>
     </div>
@@ -79,7 +95,7 @@
     function fillCredentials(email) {
       document.getElementById("email").value = email;
       document.getElementById("password").value = DEMO_PASSWORD;
-      showAlert(`Filled credentials for ${email}`, "info");
+      showAlert(`Selected credentials for ${email}`, "info");
     }
 
     function showAlert(msg, type = "error") {
@@ -96,8 +112,14 @@
       box.textContent = msg;
     }
 
-    // Auto-redirect if already logged in
+    // Auto-redirect if already logged in or handle session expired query
     document.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("session_expired")) {
+        showAlert("Your session has expired. Please log in again.", "error");
+        return;
+      }
+
       const user = API.getUser();
       const token = API.getToken();
       if (user && token) {
@@ -113,14 +135,26 @@
       const btn = document.getElementById("submit-btn");
 
       btn.disabled = true;
-      btn.innerHTML = `<span>Authenticating...</span>`;
+      btn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Authenticating...</span>
+      `;
 
       try {
         const res = await API.login(email, password);
         showAlert("Authentication successful! Redirecting...", "success");
         setTimeout(() => {
-          window.location.href = API.getRedirectUrlForRole(res.user.role);
-        }, 300);
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirect = urlParams.get("redirect");
+          if (redirect) {
+            window.location.href = redirect;
+          } else {
+            window.location.href = API.getRedirectUrlForRole(res.user.role);
+          }
+        }, 200);
       } catch (err) {
         showAlert(err.message || "Invalid email or password", "error");
         btn.disabled = false;

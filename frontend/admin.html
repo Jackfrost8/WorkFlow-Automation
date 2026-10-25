@@ -10,57 +10,179 @@
 <body class="min-h-screen bg-slate-50 flex flex-col justify-between">
 
   <!-- Header -->
-  <header class="gradient-header text-white shadow-md">
+  <header class="gradient-header text-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-blue-900 shadow text-sm">AICTE</a>
         <div>
-          <h1 class="text-base sm:text-lg font-bold">Admin Console</h1>
-          <p class="text-xs text-blue-200">System Administration &amp; Access Governance</p>
+          <h1 class="text-base sm:text-lg font-bold">Admin Central Console</h1>
+          <p class="text-xs text-blue-200">System Administration, Time Machine &amp; Cryptographic Audit Governance</p>
         </div>
       </div>
 
-      <!-- User Nav Profile -->
-      <div class="flex items-center space-x-4 text-xs">
-        <div class="text-right hidden sm:block">
-          <p id="nav-user-name" class="font-semibold text-white">Loading...</p>
-          <p class="text-blue-200"><span id="nav-user-role">ADMIN</span> &bull; <span id="nav-user-email"></span></p>
+      <!-- Time Simulation & Notification Controls -->
+      <div class="flex items-center space-x-3">
+        <div id="simulated-time-badge" class="hidden"></div>
+
+        <div class="relative">
+          <button id="btn-notification-bell" class="p-2 rounded-full bg-white/10 hover:bg-white/20 transition relative">
+            <span class="text-base">🔔</span>
+            <span id="notification-unread-count" class="hidden absolute -top-1 -right-1 bg-red-500 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
+          </button>
         </div>
-        <button class="btn-logout px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded border border-white/20 transition">
+
+        <div class="text-right hidden sm:block border-l border-white/20 pl-3">
+          <p id="nav-user-name" class="font-semibold text-xs text-white">Loading...</p>
+          <p class="text-[11px] text-blue-200">
+            <span id="nav-user-role">ADMIN</span> &bull; <span>Superuser Scope</span>
+          </p>
+        </div>
+
+        <button class="btn-logout px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded text-xs font-medium border border-white/20 transition">
           Sign Out
         </button>
       </div>
     </div>
   </header>
 
+  <!-- Notification Drawer -->
+  <div id="notification-drawer" class="hidden fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-sm flex justify-end">
+    <div class="w-full max-w-md bg-white h-full shadow-2xl flex flex-col">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">🔔</span>
+          <h3 class="font-bold text-slate-800 text-sm">System Notifications</h3>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="btn-mark-all-read" class="text-xs text-blue-700 hover:underline">Mark all read</button>
+          <button id="btn-close-notifications" class="text-slate-400 hover:text-slate-600 font-bold text-xl px-2">&times;</button>
+        </div>
+      </div>
+      <div id="notification-drawer-list" class="flex-grow overflow-y-auto divide-y divide-slate-100"></div>
+    </div>
+  </div>
+
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
-    
-    <!-- Welcome Banner -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+    <!-- Top Banner -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>
-        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 uppercase tracking-wide">
-          Administrator Controls
-        </span>
-        <h2 class="text-2xl font-bold text-slate-800 mt-2">Platform Administration Desk</h2>
-        <p class="text-xs text-slate-500 mt-1">Full regulatory jurisdiction &bull; User access governance</p>
+        <div class="inline-flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-900 uppercase tracking-wide">
+            Root Administrator Privileges
+          </span>
+          <span class="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 font-medium">
+            Full Audit &amp; Policy Control
+          </span>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mt-2">Platform Administration &amp; Demo Time Machine</h2>
+        <p class="text-xs text-slate-500 mt-1">
+          Adjust persistent simulation dates, calibrate statutory SLA rules, inspect cryptographically chained audit trails, and manage user credentials.
+        </p>
       </div>
-      <div class="flex items-center space-x-3">
-        <span class="px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-full text-xs font-semibold">
-          Admin Privilege Verified
-        </span>
+
+      <div class="flex items-center space-x-2">
+        <button id="btn-refresh-all-admin" class="px-4 py-2 bg-purple-900 hover:bg-purple-800 text-white rounded-lg text-xs font-semibold shadow transition flex items-center space-x-1.5">
+          <span>🔄</span>
+          <span>Refresh All Admin Desks</span>
+        </button>
       </div>
     </div>
 
-    <!-- User Management Table Panel -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-      <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-        <div>
-          <h3 class="font-bold text-slate-800 text-sm">Platform Users Directory</h3>
-          <p class="text-xs text-slate-500">Live directory managed via <code>/api/v1/users</code></p>
+    <!-- Section 1: Time Machine Simulation Center -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+      <div class="flex flex-wrap justify-between items-center pb-4 border-b border-slate-200 gap-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-xl">
+            ⏳
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-800 text-base">Demonstration Time Machine Control</h3>
+            <p class="text-xs text-slate-500">
+              Shift the persistent effective business clock forward to demonstrate deadline reminders, overdue notices, and SLA escalations.
+            </p>
+          </div>
         </div>
-        <button id="refresh-users-btn" class="px-3 py-1.5 bg-blue-900 text-white text-xs font-medium rounded hover:bg-blue-800 transition">
-          Refresh List
+
+        <div id="simulation-status-indicator" class="flex items-center space-x-2">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <!-- Current Effective Clock Card -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Effective Business Date</span>
+            <div id="tm-simulated-date" class="text-2xl font-black text-slate-900 mt-1">Loading...</div>
+            <div class="text-xs text-slate-500 mt-1">
+              Real System Date: <span id="tm-real-date" class="font-mono text-slate-700">Loading...</span>
+            </div>
+            <div class="text-xs text-slate-500">
+              Active Offset: <span id="tm-offset-days" class="font-bold text-purple-700">0</span> days
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-200 flex justify-between items-center">
+            <button id="btn-reset-time" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 rounded-lg text-xs font-semibold transition">
+              Reset to Real Time (Offset = 0)
+            </button>
+            <button id="btn-admin-run-sla" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold shadow transition">
+              Evaluate SLA Rules
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Advance Controls -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Quick Advance Shortcuts</span>
+          <p class="text-[11px] text-slate-400 mt-0.5 mb-3">Jump business time and evaluate deadline transitions automatically</p>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button onclick="advanceTimeShortcut(1)" class="p-2.5 bg-white hover:bg-slate-100 text-slate-800 font-bold rounded-lg border border-slate-300 transition text-center shadow-sm">
+              +1 Day <span class="block text-[10px] font-normal text-slate-500">Daily check</span>
+            </button>
+            <button onclick="advanceTimeShortcut(7)" class="p-2.5 bg-white hover:bg-slate-100 text-slate-800 font-bold rounded-lg border border-slate-300 transition text-center shadow-sm">
+              +7 Days <span class="block text-[10px] font-normal text-slate-500">1 Week Stage SLA</span>
+            </button>
+            <button onclick="advanceTimeShortcut(14)" class="p-2.5 bg-white hover:bg-slate-100 text-slate-800 font-bold rounded-lg border border-slate-300 transition text-center shadow-sm">
+              +14 Days <span class="block text-[10px] font-normal text-slate-500">2 Weeks (Overdue)</span>
+            </button>
+            <button onclick="advanceTimeShortcut(30)" class="p-2.5 bg-white hover:bg-slate-100 text-purple-800 font-bold rounded-lg border border-purple-300 transition text-center shadow-sm">
+              +30 Days <span class="block text-[10px] font-normal text-purple-600">Full Escalation SLA</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Day Advancement Form -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Custom Time Advancement</span>
+          <form id="form-advance-time" class="mt-2 space-y-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Days to Advance (1 to 365)</label>
+              <input type="number" id="custom-advance-days" min="1" max="365" value="5" required
+                     class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-purple-700 bg-white">
+            </div>
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="advance-run-check" checked class="rounded text-purple-700 focus:ring-purple-700">
+              <label for="advance-run-check" class="text-[11px] text-slate-700">Trigger deadline evaluation engine immediately</label>
+            </div>
+            <button type="submit" id="btn-submit-advance" class="w-full py-2 bg-purple-900 hover:bg-purple-800 text-white rounded-lg text-xs font-bold shadow transition">
+              Advance Simulated Time
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Deadline & SLA Escalation Rules Editor -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Configurable Deadline &amp; SLA Escalation Rules</h3>
+          <p class="text-xs text-slate-500">Tune pre-deadline notification windows, overdue thresholds, and recipient authority</p>
+        </div>
+        <button id="btn-refresh-rules" class="text-xs text-purple-900 font-semibold hover:underline flex items-center space-x-1">
+          <span>🔄</span> <span>Refresh Rules</span>
         </button>
       </div>
 
@@ -68,16 +190,109 @@
         <table class="w-full text-left text-xs text-slate-600">
           <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
             <tr>
-              <th class="px-6 py-3">User</th>
-              <th class="px-6 py-3">Role</th>
-              <th class="px-6 py-3">Region / Scope</th>
+              <th class="px-6 py-3">Trackable Workflow Entity</th>
+              <th class="px-6 py-3">Reminder Threshold</th>
+              <th class="px-6 py-3">Escalation Threshold</th>
+              <th class="px-6 py-3">Escalation Recipient Role</th>
+              <th class="px-6 py-3">Rule Status</th>
+              <th class="px-6 py-3 text-right">Edit Policy</th>
+            </tr>
+          </thead>
+          <tbody id="deadline-rules-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="6" class="px-6 py-6 text-center text-slate-400">Loading statutory deadline rules...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 3: Configured Workflow Routes & SLAs -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Configured Workflow Approval Routes &amp; Stage SLAs</h3>
+          <p class="text-xs text-slate-500">Statutory sequence of stages, permitted transitions, and SLA benchmarks</p>
+        </div>
+      </div>
+
+      <div id="workflows-container" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Section 4: Append-Only Cryptographic Audit Log Viewer -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Append-Only Cryptographic Audit Log</h3>
+          <p class="text-xs text-slate-500">Tamper-evident SHA-256 hash-chained trail of all workflow transitions and officer actions</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <select id="filter-audit-action" class="px-2.5 py-1 text-xs border border-slate-300 rounded bg-white">
+            <option value="">All Actions</option>
+            <option value="APPLICATION_SUBMITTED">APPLICATION_SUBMITTED</option>
+            <option value="STAGE_COMPLETED">STAGE_COMPLETED</option>
+            <option value="APPLICATION_RETURNED">APPLICATION_RETURNED</option>
+            <option value="EVC_SCHEDULED">EVC_SCHEDULED</option>
+            <option value="UNDERTAKING_VERIFIED">UNDERTAKING_VERIFIED</option>
+            <option value="SIMULATED_TIME_ADVANCED">SIMULATED_TIME_ADVANCED</option>
+            <option value="ESCALATION_TRIGGERED">ESCALATION_TRIGGERED</option>
+          </select>
+          <button id="btn-refresh-audit" class="text-xs text-purple-900 font-semibold hover:underline flex items-center space-x-1">
+            <span>🔄</span> <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">Event ID</th>
+              <th class="px-6 py-3">Timestamp (UTC)</th>
+              <th class="px-6 py-3">Actor / User</th>
+              <th class="px-6 py-3">Action</th>
+              <th class="px-6 py-3">Resource Ref</th>
+              <th class="px-6 py-3">SHA-256 Chained Hash</th>
+              <th class="px-6 py-3">Payload Details</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="7" class="px-6 py-6 text-center text-slate-400">Loading audit trail...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Section 5: Platform User & Role Directory -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Platform User Directory &amp; RBAC Governance</h3>
+          <p class="text-xs text-slate-500">Accounts authorized for institution access, regional scrutiny, and apex oversight</p>
+        </div>
+        <button id="btn-open-user-modal" class="px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white rounded text-xs font-semibold shadow transition">
+          + Create User
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">User &amp; Email</th>
+              <th class="px-6 py-3">System Role</th>
+              <th class="px-6 py-3">Jurisdiction Scope</th>
               <th class="px-6 py-3">Status</th>
-              <th class="px-6 py-3">Registered At</th>
+              <th class="px-6 py-3">Created At</th>
             </tr>
           </thead>
           <tbody id="users-table-body" class="divide-y divide-slate-100">
             <tr>
-              <td colspan="5" class="px-6 py-4 text-center text-slate-400">Loading platform users...</td>
+              <td colspan="5" class="px-6 py-6 text-center text-slate-400">Loading users...</td>
             </tr>
           </tbody>
         </table>
@@ -86,53 +301,513 @@
 
   </main>
 
+  <!-- Modal: Edit Deadline Rule -->
+  <div id="modal-edit-rule" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-slate-800">Edit Deadline &amp; Escalation Rule</h3>
+        <button id="btn-close-rule-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-edit-rule" class="mt-4 space-y-4">
+        <input type="hidden" id="edit-rule-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Trackable Entity</label>
+          <input type="text" id="edit-rule-entity" readonly
+                 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-slate-100 font-bold text-slate-700">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Reminder Days</label>
+            <input type="number" id="edit-rule-reminder" min="0" max="60" required
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-purple-700">
+            <p class="text-[10px] text-slate-400 mt-0.5">Days before deadline to alert</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Escalation Days</label>
+            <input type="number" id="edit-rule-escalation" min="0" max="60" required
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-purple-700">
+            <p class="text-[10px] text-slate-400 mt-0.5">Days overdue before escalation</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Escalation Recipient Role</label>
+          <select id="edit-rule-role" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-purple-700">
+            <option value="REGIONAL_OFFICER">REGIONAL_OFFICER (Assigned Region)</option>
+            <option value="BUREAU_OFFICER">BUREAU_OFFICER (Apex HQ Level)</option>
+            <option value="ADMIN">ADMIN (System Superuser)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-1">
+          <input type="checkbox" id="edit-rule-active" class="rounded text-purple-700 focus:ring-purple-700">
+          <label for="edit-rule-active" class="text-xs font-semibold text-slate-700">Enable this rule for deadline evaluation</label>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-rule-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-rule" class="px-5 py-2 bg-purple-900 hover:bg-purple-800 text-white rounded-lg text-xs font-semibold shadow">
+            Save Rule Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create User -->
+  <div id="modal-create-user" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-200">
+        <h3 class="text-base font-bold text-slate-800">Create Platform Account</h3>
+        <button id="btn-close-user-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-create-user" class="mt-4 space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Full Name</label>
+          <input type="text" id="new-user-name" required placeholder="Dr. S. K. Patel"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Email Address</label>
+          <input type="email" id="new-user-email" required placeholder="officer.west@aicte.gov.in"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Password</label>
+          <input type="password" id="new-user-password" required placeholder="••••••••"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-800">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">System Role</label>
+            <select id="new-user-role" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-800 font-semibold">
+              <option value="REGIONAL_OFFICER">REGIONAL_OFFICER</option>
+              <option value="BUREAU_OFFICER">BUREAU_OFFICER</option>
+              <option value="ADMIN">ADMIN</option>
+              <option value="INSTITUTION">INSTITUTION</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Jurisdiction / Region</label>
+            <select id="new-user-region" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-800">
+              <option value="">National / None</option>
+              <option value="NORTH">NORTH</option>
+              <option value="WEST">WEST</option>
+              <option value="SOUTH">SOUTH</option>
+              <option value="EAST">EAST</option>
+              <option value="CENTRAL">CENTRAL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+          <button type="button" id="btn-cancel-user-modal" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" id="btn-submit-user" class="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow">
+            Create User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer class="bg-slate-900 text-slate-400 py-4 text-center text-xs">
-    AICTE Workflow Automation Platform &bull; Phase 2 Authentication Active
+    AICTE Workflow Automation Platform &bull; System Administration &bull; Tamper-Evident Hash Audit
   </footer>
 
   <script src="/static/js/api.js"></script>
   <script src="/static/js/auth.js"></script>
   <script>
-    async function loadUsers() {
+    let activeRules = [];
+    let activeAudit = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      loadAllAdminData();
+
+      document.getElementById("btn-refresh-all-admin").onclick = loadAllAdminData;
+      document.getElementById("btn-refresh-rules").onclick = fetchDeadlineRules;
+      document.getElementById("btn-refresh-audit").onclick = fetchAuditLogs;
+      document.getElementById("filter-audit-action").onchange = renderAuditLogs;
+
+      // Time Machine
+      document.getElementById("btn-reset-time").onclick = async () => {
+        if (!confirm("Reset demo simulated time to zero offset (re-sync with real system UTC)?")) return;
+        try {
+          await API.resetSimulatedTime();
+          API.showToast("Simulated time reset to real UTC time!", "success");
+          fetchSimulatedTime();
+          API.initSimulatedTimeBadge();
+        } catch (err) {
+          API.showToast(err.message || "Failed to reset simulated time", "error");
+        }
+      };
+
+      document.getElementById("btn-admin-run-sla").onclick = async () => {
+        try {
+          await API.runDeadlineCheck();
+          API.showToast("Deadline & escalation rules evaluated against effective date!", "success");
+          fetchAuditLogs();
+        } catch (err) {
+          API.showToast(err.message || "Failed to run SLA check", "error");
+        }
+      };
+
+      document.getElementById("form-advance-time").onsubmit = async (e) => {
+        e.preventDefault();
+        const days = parseInt(document.getElementById("custom-advance-days").value);
+        const runCheck = document.getElementById("advance-run-check").checked;
+        await doAdvanceTime(days, runCheck);
+      };
+
+      setupAdminModals();
+    });
+
+    async function loadAllAdminData() {
+      await Promise.all([
+        fetchSimulatedTime(),
+        fetchDeadlineRules(),
+        fetchWorkflows(),
+        fetchAuditLogs(),
+        fetchUsers()
+      ]);
+    }
+
+    // -------------------------------------------------------------
+    // Simulated Time Machine
+    // -------------------------------------------------------------
+    async function fetchSimulatedTime() {
+      try {
+        const status = await API.getSimulatedTime();
+        document.getElementById("tm-simulated-date").textContent = status.simulated_date;
+        document.getElementById("tm-real-date").textContent = status.real_date;
+        document.getElementById("tm-offset-days").textContent = status.offset_days;
+
+        const indicator = document.getElementById("simulation-status-indicator");
+        if (status.is_simulated && status.offset_days > 0) {
+          indicator.innerHTML = `
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-2 animate-ping"></span>
+              SIMULATION ACTIVE (+${status.offset_days}d offset)
+            </span>
+          `;
+        } else {
+          indicator.innerHTML = `
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
+              REAL TIME SYNCHRONIZED
+            </span>
+          `;
+        }
+        API.initSimulatedTimeBadge();
+      } catch (err) {
+        console.warn("Could not fetch simulated time:", err);
+      }
+    }
+
+    window.advanceTimeShortcut = async (days) => {
+      await doAdvanceTime(days, true);
+    };
+
+    async function doAdvanceTime(days, runCheck) {
+      const btn = document.getElementById("btn-submit-advance");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = `Advancing +${days} days...`;
+      }
+      try {
+        const res = await API.advanceSimulatedTime(days, runCheck);
+        API.showToast(`Time advanced by +${days} days! New effective date: ${res.new_simulated_date}`, "success");
+        await fetchSimulatedTime();
+        await fetchAuditLogs();
+      } catch (err) {
+        API.showToast(err.message || "Failed to advance time", "error");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Advance Simulated Time";
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Deadline & Escalation Rules
+    // -------------------------------------------------------------
+    async function fetchDeadlineRules() {
+      const tbody = document.getElementById("deadline-rules-table-body");
+      try {
+        const rules = await API.getDeadlineRules();
+        activeRules = rules || [];
+
+        if (activeRules.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-slate-400">No deadline rules found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = activeRules.map(r => `
+          <tr class="hover:bg-slate-50/70 transition">
+            <td class="px-6 py-3 font-semibold text-slate-800">
+              ${API.escapeHtml(r.trackable_type)}
+              <div class="text-[10px] text-slate-400 font-normal">${API.escapeHtml(r.description || '')}</div>
+            </td>
+            <td class="px-6 py-3 font-bold text-amber-700">${r.reminder_threshold_days} days before</td>
+            <td class="px-6 py-3 font-bold text-red-600">${r.escalation_threshold_days} days overdue</td>
+            <td class="px-6 py-3 font-semibold text-slate-800">${API.escapeHtml(r.escalation_recipient_role)}</td>
+            <td class="px-6 py-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${r.is_active ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-100 text-slate-600 border-slate-300'}">
+                ${r.is_active ? 'ENABLED' : 'DISABLED'}
+              </span>
+            </td>
+            <td class="px-6 py-3 text-right">
+              <button onclick="openEditRuleModal(${r.id})" class="px-2.5 py-1 bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-200 rounded text-xs font-semibold transition">
+                Configure
+              </button>
+            </td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Failed to load rules: ${API.escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Configured Workflow Routes & SLAs
+    // -------------------------------------------------------------
+    async function fetchWorkflows() {
+      const container = document.getElementById("workflows-container");
+      try {
+        const workflows = await API.getWorkflows();
+        if (!workflows || workflows.length === 0) {
+          container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 col-span-2">No workflow routes loaded.</div>`;
+          return;
+        }
+
+        container.innerHTML = workflows.map(wf => `
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 bg-blue-100 text-blue-900 rounded font-mono font-bold text-[10px]">${API.escapeHtml(wf.code)}</span>
+                <span class="text-[10px] font-semibold text-emerald-700">Active Route</span>
+              </div>
+              <h4 class="font-bold text-slate-800 text-sm mt-1">${API.escapeHtml(wf.name)}</h4>
+              <p class="text-[11px] text-slate-500 mt-0.5 mb-3">${API.escapeHtml(wf.description || '')}</p>
+
+              <div class="space-y-1.5 border-t border-slate-200 pt-2 text-xs">
+                ${wf.stages.map(s => `
+                  <div class="flex items-center justify-between p-1.5 bg-white rounded border border-slate-200 text-[11px]">
+                    <div class="flex items-center space-x-1.5">
+                      <span class="w-4 h-4 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-[9px]">${s.order_index}</span>
+                      <span class="font-semibold text-slate-800">${API.escapeHtml(s.name)}</span>
+                      ${s.is_final ? '<span class="text-[9px] text-purple-700 font-bold bg-purple-50 px-1 rounded">FINAL</span>' : ''}
+                      ${s.is_evc_stage ? '<span class="text-[9px] text-blue-700 font-bold bg-blue-50 px-1 rounded">EVC</span>' : ''}
+                    </div>
+                    <div class="text-right">
+                      <span class="font-bold text-amber-700">${s.sla_days}d SLA</span>
+                      <span class="text-[9px] text-slate-400 block">${API.escapeHtml(s.authorized_roles)}</span>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+        `).join("");
+      } catch (err) {
+        container.innerHTML = `<div class="p-4 text-center text-xs text-red-500 col-span-2">Failed to load workflows: ${API.escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Append-Only Cryptographic Audit Log
+    // -------------------------------------------------------------
+    async function fetchAuditLogs() {
+      try {
+        const logs = await API.getAuditLogs({ limit: 50 });
+        activeAudit = logs || [];
+        renderAuditLogs();
+      } catch (err) {
+        document.getElementById("audit-table-body").innerHTML = `
+          <tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Failed to load audit trail: ${API.escapeHtml(err.message)}</td></tr>
+        `;
+      }
+    }
+
+    function renderAuditLogs() {
+      const tbody = document.getElementById("audit-table-body");
+      const actionFilter = document.getElementById("filter-audit-action").value;
+
+      let filtered = activeAudit;
+      if (actionFilter) {
+        filtered = filtered.filter(l => l.action === actionFilter);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-6 text-center text-slate-400">No audit events match selected filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(l => {
+        const shortPrev = l.prev_hash === "GENESIS" ? "GENESIS" : l.prev_hash.slice(0, 8) + "...";
+        const shortCurr = l.curr_hash ? l.curr_hash.slice(0, 10) + "..." : "NONE";
+
+        return `
+          <tr class="hover:bg-slate-50/70 transition">
+            <td class="px-6 py-3 font-mono font-bold text-slate-800">#${l.id}</td>
+            <td class="px-6 py-3 text-slate-500">${API.formatDate(l.timestamp)}</td>
+            <td class="px-6 py-3">
+              <div class="font-semibold text-slate-800">${API.escapeHtml(l.actor_name || "System Service")}</div>
+              <div class="text-[10px] text-slate-400 font-mono">${API.escapeHtml(l.actor_email || "")}</div>
+            </td>
+            <td class="px-6 py-3">
+              <span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-slate-100 text-slate-800">${API.escapeHtml(l.action)}</span>
+            </td>
+            <td class="px-6 py-3 font-mono text-[11px] text-slate-700">
+              ${API.escapeHtml(l.resource_type)} ${l.resource_id ? '#' + API.escapeHtml(l.resource_id) : ''}
+            </td>
+            <td class="px-6 py-3">
+              <div class="font-mono text-[10px] text-purple-900 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200" title="Prev: ${l.prev_hash}&#10;Curr: ${l.curr_hash}">
+                ${shortPrev} &rarr; <strong>${shortCurr}</strong>
+              </div>
+            </td>
+            <td class="px-6 py-3 text-[11px] text-slate-600 max-w-xs truncate" title="${API.escapeHtml(l.details || '')}">
+              ${API.escapeHtml(l.details || '-')}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // -------------------------------------------------------------
+    // Users Directory
+    // -------------------------------------------------------------
+    async function fetchUsers() {
       const tbody = document.getElementById("users-table-body");
       try {
-        const users = await API.request("/api/v1/users");
+        const users = await API.getUsers();
         if (!users || users.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-400">No users found. Run <code>python -m backend.seed</code> to populate.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-slate-400">No users found.</td></tr>`;
           return;
         }
 
         tbody.innerHTML = users.map(u => `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="px-6 py-3 font-medium text-slate-900">
-              ${u.full_name}<br>
-              <span class="text-slate-400 font-normal">${u.email}</span>
+          <tr class="hover:bg-slate-50/70 transition">
+            <td class="px-6 py-3">
+              <div class="font-bold text-slate-800">${API.escapeHtml(u.full_name)}</div>
+              <div class="text-[10px] text-slate-400 font-mono">${API.escapeHtml(u.email)}</div>
             </td>
             <td class="px-6 py-3">
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
-                u.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
-                u.role === 'BUREAU_OFFICER' ? 'bg-blue-100 text-blue-800' :
-                u.role === 'REGIONAL_OFFICER' ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'
-              }">${u.role}</span>
-            </td>
-            <td class="px-6 py-3">${u.region || 'HQ'}</td>
-            <td class="px-6 py-3">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
-                ${u.is_active ? 'Active' : 'Inactive'}
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.role === 'ADMIN' ? 'bg-purple-100 text-purple-900' : (u.role === 'BUREAU_OFFICER' ? 'bg-blue-100 text-blue-900' : 'bg-slate-100 text-slate-800')}">
+                ${API.escapeHtml(u.role)}
               </span>
             </td>
-            <td class="px-6 py-3 text-slate-400">${new Date(u.created_at).toLocaleDateString()}</td>
+            <td class="px-6 py-3 font-semibold text-slate-700">${API.escapeHtml(u.region || 'National')}</td>
+            <td class="px-6 py-3">
+              <span class="text-emerald-700 font-bold text-xs">Active</span>
+            </td>
+            <td class="px-6 py-3 text-slate-400 text-[11px]">${API.formatDate(u.created_at)}</td>
           </tr>
         `).join("");
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-600">Failed to load users: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Failed to load users: ${API.escapeHtml(err.message)}</td></tr>`;
       }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      loadUsers();
-      document.getElementById("refresh-users-btn")?.addEventListener("click", loadUsers);
-    });
+    // -------------------------------------------------------------
+    // Modals Handling
+    // -------------------------------------------------------------
+    window.openEditRuleModal = (ruleId) => {
+      const r = activeRules.find(x => x.id === ruleId);
+      if (!r) return;
+      document.getElementById("edit-rule-id").value = r.id;
+      document.getElementById("edit-rule-entity").value = r.trackable_type;
+      document.getElementById("edit-rule-reminder").value = r.reminder_threshold_days;
+      document.getElementById("edit-rule-escalation").value = r.escalation_threshold_days;
+      document.getElementById("edit-rule-role").value = r.escalation_recipient_role;
+      document.getElementById("edit-rule-active").checked = r.is_active;
+
+      document.getElementById("modal-edit-rule").classList.remove("hidden");
+    };
+
+    function setupAdminModals() {
+      // Edit Rule Modal
+      const ruleModal = document.getElementById("modal-edit-rule");
+      document.getElementById("btn-close-rule-modal").onclick = () => ruleModal.classList.add("hidden");
+      document.getElementById("btn-cancel-rule-modal").onclick = () => ruleModal.classList.add("hidden");
+      document.getElementById("form-edit-rule").onsubmit = async (e) => {
+        e.preventDefault();
+        const ruleId = document.getElementById("edit-rule-id").value;
+        const reminder = parseInt(document.getElementById("edit-rule-reminder").value);
+        const escalation = parseInt(document.getElementById("edit-rule-escalation").value);
+        const role = document.getElementById("edit-rule-role").value;
+        const active = document.getElementById("edit-rule-active").checked;
+
+        const btn = document.getElementById("btn-submit-rule");
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        try {
+          await API.updateDeadlineRule(ruleId, {
+            reminder_threshold_days: reminder,
+            escalation_threshold_days: escalation,
+            escalation_recipient_role: role,
+            is_active: active,
+          });
+          API.showToast("Deadline policy rule updated successfully!", "success");
+          ruleModal.classList.add("hidden");
+          fetchDeadlineRules();
+        } catch (err) {
+          API.showToast(err.message || "Failed to update deadline rule", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Save Rule Settings";
+        }
+      };
+
+      // Create User Modal
+      const userModal = document.getElementById("modal-create-user");
+      document.getElementById("btn-open-user-modal").onclick = () => userModal.classList.remove("hidden");
+      document.getElementById("btn-close-user-modal").onclick = () => userModal.classList.add("hidden");
+      document.getElementById("btn-cancel-user-modal").onclick = () => userModal.classList.add("hidden");
+      document.getElementById("form-create-user").onsubmit = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("new-user-name").value.trim();
+        const email = document.getElementById("new-user-email").value.trim();
+        const password = document.getElementById("new-user-password").value;
+        const role = document.getElementById("new-user-role").value;
+        const region = document.getElementById("new-user-region").value;
+
+        const btn = document.getElementById("btn-submit-user");
+        btn.disabled = true;
+        btn.textContent = "Creating...";
+
+        try {
+          await API.createUser({
+            email,
+            full_name: name,
+            password,
+            role,
+            region: region || undefined,
+          });
+          API.showToast(`User ${email} created successfully!`, "success");
+          userModal.classList.add("hidden");
+          document.getElementById("form-create-user").reset();
+          fetchUsers();
+        } catch (err) {
+          API.showToast(err.message || "Failed to create user", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Create User";
+        }
+      };
+    }
   </script>
 </body>
 </html>
