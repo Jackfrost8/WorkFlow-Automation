@@ -518,11 +518,15 @@ const API = {
 
     try {
       const status = await this.getSimulatedTime();
-      if (status.is_simulated && status.offset_days > 0) {
+      const simDate = status.simulated_date || (status.simulated_time ? status.simulated_time.slice(0, 10) : "");
+      const realDate = status.real_date || (status.real_time ? status.real_time.slice(0, 10) : "");
+      const isSim = status.offset_days > 0;
+
+      if (isSim) {
         badgeEl.innerHTML = `
           <div class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-200 border border-amber-400/40">
             <span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5 animate-pulse"></span>
-            Simulated Date: ${status.simulated_date} (+${status.offset_days}d)
+            Simulated Date: ${simDate} (+${status.offset_days}d)
           </div>
         `;
         badgeEl.classList.remove("hidden");
@@ -530,7 +534,7 @@ const API = {
         badgeEl.innerHTML = `
           <div class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-slate-200 border border-white/20">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>
-            Real Date: ${status.real_date}
+            Real Date: ${realDate}
           </div>
         `;
         badgeEl.classList.remove("hidden");

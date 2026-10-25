@@ -1,7 +1,7 @@
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -88,6 +88,14 @@ if FRONTEND_DIR.exists():
 
 
 # Direct Frontend Page Routes
+@app.get("/favicon.ico", include_in_schema=False)
+async def serve_favicon():
+    return Response(
+        content=b"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127963;&#65039;</text></svg>",
+        media_type="image/svg+xml",
+    )
+
+
 @app.get("/", include_in_schema=False)
 async def serve_index():
     index_file = FRONTEND_DIR / "index.html"

@@ -24,6 +24,9 @@ class SimulatedTimeStatusResponse(BaseModel):
     simulated_time: str
     offset_seconds: float
     offset_days: float
+    real_date: Optional[str] = None
+    simulated_date: Optional[str] = None
+    is_simulated: Optional[bool] = None
 
 
 class AdvanceTimeResponse(BaseModel):
@@ -33,6 +36,7 @@ class AdvanceTimeResponse(BaseModel):
     message: str
     real_time: str
     simulated_time: str
+    new_simulated_date: Optional[str] = None
     offset_seconds: float
     offset_days: float
     days_advanced: float

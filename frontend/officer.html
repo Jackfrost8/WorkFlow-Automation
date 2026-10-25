@@ -166,9 +166,9 @@
             <option value="">All Statuses</option>
             <option value="SUBMITTED">SUBMITTED</option>
             <option value="IN_REVIEW">IN_REVIEW</option>
+            <option value="ACTION_REQUIRED">ACTION_REQUIRED (Returned)</option>
             <option value="APPROVED">APPROVED</option>
             <option value="REJECTED">REJECTED</option>
-            <option value="RETURNED">RETURNED</option>
           </select>
         </div>
       </div>
@@ -603,7 +603,7 @@
         if (app.status === "APPROVED") statusBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
         else if (app.status === "REJECTED") statusBadge = "bg-red-100 text-red-800 border-red-300";
         else if (app.status === "IN_REVIEW") statusBadge = "bg-blue-100 text-blue-800 border-blue-300";
-        else if (app.status === "RETURNED") statusBadge = "bg-amber-100 text-amber-800 border-amber-300";
+        else if (app.status === "RETURNED" || app.status === "ACTION_REQUIRED") statusBadge = "bg-amber-100 text-amber-800 border-amber-300";
 
         let deadlineHtml = '<span class="text-slate-400">N/A</span>';
         if (app.current_stage_deadline) {
@@ -622,7 +622,7 @@
         const instName = app.institution ? app.institution.name : `Inst #${app.institution_id}`;
         const region = app.institution ? app.institution.region : "";
 
-        const canProcess = app.status === "SUBMITTED" || app.status === "IN_REVIEW" || app.status === "RETURNED";
+        const canProcess = app.status === "SUBMITTED" || app.status === "IN_REVIEW" || app.status === "RETURNED" || app.status === "ACTION_REQUIRED";
 
         return `
           <tr class="hover:bg-slate-50/70 transition">

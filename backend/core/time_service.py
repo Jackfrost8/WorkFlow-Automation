@@ -67,8 +67,11 @@ def get_simulated_time_status(db: Optional[Session] = None) -> Dict[str, Any]:
 
     return {
         "is_simulation_enabled": settings.ENABLE_TIME_SIMULATION,
+        "is_simulated": settings.ENABLE_TIME_SIMULATION and offset_sec > 0,
         "real_time": real_now.isoformat(),
         "simulated_time": effective_now.isoformat(),
+        "real_date": real_now.strftime("%Y-%m-%d"),
+        "simulated_date": effective_now.strftime("%Y-%m-%d"),
         "offset_seconds": offset_sec,
         "offset_days": round(offset_sec / 86400.0, 4),
     }
@@ -160,6 +163,7 @@ def advance_simulated_time(
         "message": f"Simulated time advanced by {days} day(s).",
         "real_time": real_now.isoformat(),
         "simulated_time": new_effective_time.isoformat(),
+        "new_simulated_date": new_effective_time.strftime("%Y-%m-%d"),
         "offset_seconds": new_offset,
         "offset_days": round(new_offset / 86400.0, 4),
         "days_advanced": days,

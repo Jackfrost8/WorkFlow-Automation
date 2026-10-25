@@ -488,12 +488,16 @@
     async function fetchSimulatedTime() {
       try {
         const status = await API.getSimulatedTime();
-        document.getElementById("tm-simulated-date").textContent = status.simulated_date;
-        document.getElementById("tm-real-date").textContent = status.real_date;
+        const simDate = status.simulated_date || (status.simulated_time ? status.simulated_time.slice(0, 10) : "");
+        const realDate = status.real_date || (status.real_time ? status.real_time.slice(0, 10) : "");
+        const isSim = status.offset_days > 0;
+
+        document.getElementById("tm-simulated-date").textContent = simDate;
+        document.getElementById("tm-real-date").textContent = realDate;
         document.getElementById("tm-offset-days").textContent = status.offset_days;
 
         const indicator = document.getElementById("simulation-status-indicator");
-        if (status.is_simulated && status.offset_days > 0) {
+        if (isSim) {
           indicator.innerHTML = `
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
               <span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-2 animate-ping"></span>
