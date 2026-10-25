@@ -9,6 +9,7 @@ from backend.schemas.institution import (
     InstitutionResponse,
 )
 from backend.schemas.user import UserBase, UserCreate, UserResponse
+from backend.schemas.auth import LoginRequest, TokenResponse, UserUpdate
 
 __all__ = [
     "HealthResponse",
@@ -20,4 +21,7 @@ __all__ = [
     "UserBase",
     "UserCreate",
     "UserResponse",
+    "LoginRequest",
+    "TokenResponse",
+    "UserUpdate",
 ]

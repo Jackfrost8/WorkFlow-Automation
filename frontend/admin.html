@@ -3,40 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin &amp; Time Machine — AICTE Workflow</title>
+  <title>Admin Console — AICTE Workflow</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/static/css/custom.css">
 </head>
 <body class="min-h-screen bg-slate-50 flex flex-col justify-between">
+
+  <!-- Header -->
   <header class="gradient-header text-white shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-blue-900 shadow text-sm">AICTE</a>
-        <h1 class="text-lg font-bold">Admin Console &amp; Demo Time Machine</h1>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold">Admin Console</h1>
+          <p class="text-xs text-blue-200">System Administration &amp; Access Governance</p>
+        </div>
       </div>
-      <a href="/" class="text-xs text-blue-200 hover:text-white">&larr; Back to Home</a>
+
+      <!-- User Nav Profile -->
+      <div class="flex items-center space-x-4 text-xs">
+        <div class="text-right hidden sm:block">
+          <p id="nav-user-name" class="font-semibold text-white">Loading...</p>
+          <p class="text-blue-200"><span id="nav-user-role">ADMIN</span> &bull; <span id="nav-user-email"></span></p>
+        </div>
+        <button class="btn-logout px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded border border-white/20 transition">
+          Sign Out
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
-      <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
-        ⏱️
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+    
+    <!-- Welcome Banner -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 uppercase tracking-wide">
+          Administrator Controls
+        </span>
+        <h2 class="text-2xl font-bold text-slate-800 mt-2">Platform Administration Desk</h2>
+        <p class="text-xs text-slate-500 mt-1">Full regulatory jurisdiction &bull; User access governance</p>
       </div>
-      <h2 class="text-2xl font-bold text-slate-800 mb-2">Platform Administration &amp; Time Capsule</h2>
-      <p class="text-slate-600 max-w-xl mx-auto text-sm mb-6">
-        Allows administrators to manage users, configure workflow routes, inspect cryptographic audit trails, 
-        and fast-forward simulated demo time to trigger SLA warnings and escalations without altering the OS clock.
-      </p>
-      <div class="inline-flex items-center px-4 py-2 bg-slate-100 rounded-lg text-xs text-slate-600 font-mono">
-        Status: Phase 1 Scaffolding Complete
+      <div class="flex items-center space-x-3">
+        <span class="px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-full text-xs font-semibold">
+          Admin Privilege Verified
+        </span>
       </div>
     </div>
+
+    <!-- User Management Table Panel -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm">Platform Users Directory</h3>
+          <p class="text-xs text-slate-500">Live directory managed via <code>/api/v1/users</code></p>
+        </div>
+        <button id="refresh-users-btn" class="px-3 py-1.5 bg-blue-900 text-white text-xs font-medium rounded hover:bg-blue-800 transition">
+          Refresh List
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-100 text-slate-700 uppercase font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-3">User</th>
+              <th class="px-6 py-3">Role</th>
+              <th class="px-6 py-3">Region / Scope</th>
+              <th class="px-6 py-3">Status</th>
+              <th class="px-6 py-3">Registered At</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-slate-400">Loading platform users...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 
   <footer class="bg-slate-900 text-slate-400 py-4 text-center text-xs">
-    AICTE Workflow Automation Platform &bull; Phase 1 Infrastructure
+    AICTE Workflow Automation Platform &bull; Phase 2 Authentication Active
   </footer>
+
   <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script>
+    async function loadUsers() {
+      const tbody = document.getElementById("users-table-body");
+      try {
+        const users = await API.request("/api/v1/users");
+        if (!users || users.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-400">No users found. Run <code>python -m backend.seed</code> to populate.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = users.map(u => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-6 py-3 font-medium text-slate-900">
+              ${u.full_name}<br>
+              <span class="text-slate-400 font-normal">${u.email}</span>
+            </td>
+            <td class="px-6 py-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${
+                u.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
+                u.role === 'BUREAU_OFFICER' ? 'bg-blue-100 text-blue-800' :
+                u.role === 'REGIONAL_OFFICER' ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'
+              }">${u.role}</span>
+            </td>
+            <td class="px-6 py-3">${u.region || 'HQ'}</td>
+            <td class="px-6 py-3">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                ${u.is_active ? 'Active' : 'Inactive'}
+              </span>
+            </td>
+            <td class="px-6 py-3 text-slate-400">${new Date(u.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-600">Failed to load users: ${err.message}</td></tr>`;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadUsers();
+      document.getElementById("refresh-users-btn")?.addEventListener("click", loadUsers);
+    });
+  </script>
 </body>
 </html>

@@ -81,6 +81,29 @@ d:\SIH Workflow project\
 
 ---
 
+## Demo Accounts & Development Credentials
+
+The platform includes an idempotent seed script to populate demo institutions and role-based officer accounts for immediate local demonstration.
+
+To seed/reset demo accounts:
+```powershell
+python -m backend.seed
+```
+
+| Role | Email | Password | Region / Campus |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@aicte.gov.in` | `Demo@AICTE2026!` | AICTE Headquarters |
+| **Bureau Officer** | `bureau@aicte.gov.in` | `Demo@AICTE2026!` | HQ - New Delhi |
+| **Regional Officer** | `ro.north@aicte.gov.in` | `Demo@AICTE2026!` | Northern Region |
+| **Regional Officer** | `ro.west@aicte.gov.in` | `Demo@AICTE2026!` | Western Region |
+| **Institution (DTU)** | `inst.dtu@aicte.gov.in` | `Demo@AICTE2026!` | Delhi Technological University |
+| **Institution (COEP)** | `inst.coep@aicte.gov.in` | `Demo@AICTE2026!` | College of Engineering Pune |
+
+> [!NOTE]
+> All passwords are cryptographically hashed using **bcrypt** (salt rounds: 12) and passwords/hashes are never exposed via API endpoints.
+
+---
+
 ## Windows Setup & Execution Guide
 
 ### Prerequisites

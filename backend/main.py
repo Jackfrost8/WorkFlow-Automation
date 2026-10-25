@@ -9,6 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from backend.config import get_settings
 from backend.database import init_db
 from backend.routers.health import router as health_router
+from backend.routers.auth import router as auth_router
+from backend.routers.users import router as users_router
 
 settings = get_settings()
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,7 +47,12 @@ app.add_middleware(
 
 # API Routers
 app.include_router(health_router, prefix=settings.API_V1_PREFIX)
-app.include_router(health_router, prefix="/api")  # Top-level convenience route for /api/health
+app.include_router(health_router, prefix="/api")  # Convenience alias for /api/health
+
+app.include_router(auth_router, prefix=f"{settings.API_V1_PREFIX}/auth")
+app.include_router(auth_router, prefix="/api/auth")  # Required endpoint: POST /api/auth/login
+
+app.include_router(users_router, prefix=settings.API_V1_PREFIX)
 
 # Mount static frontend directory
 if FRONTEND_DIR.exists():

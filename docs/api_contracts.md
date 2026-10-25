@@ -21,11 +21,55 @@ Checks backend responsiveness, environment, and database connectivity.
 
 ---
 
-## 2. Planned API Endpoints for Upcoming Milestones
+## 2. Authentication & Profile (`/api/v1/auth` & `/api/auth`)
 
-### Authentication (`/api/v1/auth`)
-- `POST /login`: Validates credentials and returns JWT bearer token.
-- `GET /me`: Returns profile and permissions of authenticated user.
+### `POST /api/auth/login` (and `/api/v1/auth/login`)
+Authenticates credentials and returns a signed JWT access token.
+
+**Request Body**:
+```json
+{
+  "email": "admin@aicte.gov.in",
+  "password": "Demo@AICTE2026!"
+}
+```
+
+**Response**:
+`200 OK`
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "user": {
+    "id": 1,
+    "email": "admin@aicte.gov.in",
+    "full_name": "AICTE Platform Administrator",
+    "role": "ADMIN",
+    "region": null,
+    "institution_id": null,
+    "is_active": true,
+    "created_at": "2026-10-25T05:37:41.037788Z",
+    "updated_at": "2026-10-25T05:37:41.037791Z"
+  }
+}
+```
+
+### `GET /api/v1/auth/me`
+Returns the profile of the authenticated user. Requires `Authorization: Bearer <token>`.
+
+---
+
+## 3. User Management (`/api/v1/users`)
+
+- **`GET /api/v1/users`**: List users with optional role and region filters (Admin only).
+- **`POST /api/v1/users`**: Provision a new user account with role assignment (Admin only).
+- **`GET /api/v1/users/{id}`**: Retrieve user details (Admin or self).
+- **`PATCH /api/v1/users/{id}`**: Update user details. Non-administrators are blocked with `HTTP 403` if attempting to change their own role or active status.
+- **`DELETE /api/v1/users/{id}`**: Soft-delete/deactivate user (Admin only).
+
+---
+
+## 4. Planned API Endpoints for Upcoming Milestones
 
 ### Applications & Workflow (`/api/v1/applications`)
 - `GET /`: Lists applications filtered by user role and region.

@@ -10,11 +10,13 @@
   - `.gitignore`, `.env.example`, `requirements.txt`, and setup documentation.
   - Test suite covering health checks, DB persistence, static delivery, and config validation.
 
-- [ ] **Milestone 2: Authentication Engine, Simulated Time Service & User Seeding**
+- [x] **Milestone 2: Authentication Engine, Simulated Time Service & User Seeding**
   - Secure bcrypt password hashing and JWT token handling.
   - FastAPI dependencies for authentication (`get_current_user`, `require_roles`).
-  - Simulated `TimeService` (virtual clock offset for demonstrations).
-  - Seed script with sample accounts for all 4 roles and default workflow routes.
+  - Seed script (`python -m backend.seed`) with sample accounts for all 4 roles and institutions.
+  - Admin user management endpoints (`/api/v1/users`).
+  - Frontend login page with 1-click credential filling and role-based redirects.
+  - Frontend protected page route guards and logout behavior.
 
 - [ ] **Milestone 3: Configurable Workflow Engine & State Machine**
   - Application submission by institutions.
