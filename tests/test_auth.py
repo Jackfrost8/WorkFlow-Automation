@@ -176,3 +176,81 @@ def test_seed_demo_data_idempotency(db_session: Session):
     res2 = seed_demo_data(session=db_session, verbose=False)
     assert res1["users"] == res2["users"]
     assert res1["institutions"] == res2["institutions"]
+
+
+def test_institution_accessing_officer_functionality_rejected(client: TestClient):
+    """Security check: Institution role attempting to access officer-only endpoint receives 403 Forbidden."""
+    inst_token = get_token_for_user(client, "inst.dtu@aicte.gov.in")
+    response = client.get("/api/v1/auth/officer-check", headers={"Authorization": f"Bearer {inst_token}"})
+    assert response.status_code == 403
+    assert "Access forbidden: requires one of [REGIONAL_OFFICER, BUREAU_OFFICER]" in response.json()["detail"]
+
+
+def test_regional_officer_accessing_admin_functionality_rejected(client: TestClient):
+    """Security check: Regional Officer attempting to access admin user provisioning receives 403 Forbidden."""
+    ro_token = get_token_for_user(client, "ro.north@aicte.gov.in")
+    # GET users
+    res_get = client.get("/api/v1/users", headers={"Authorization": f"Bearer {ro_token}"})
+    assert res_get.status_code == 403
+    assert "Access forbidden" in res_get.json()["detail"]
+
+    # POST users
+    res_post = client.post(
+        "/api/v1/users",
+        json={"email": "hacker@test.com", "full_name": "Fake", "role": "ADMIN", "password": "Password123!"},
+        headers={"Authorization": f"Bearer {ro_token}"},
+    )
+    assert res_post.status_code == 403
+    assert "Access forbidden" in res_post.json()["detail"]
+
+
+def test_authorized_access_by_correct_role(client: TestClient):
+    """Verify authorized users can access the endpoints intended for their role."""
+    ro_token = get_token_for_user(client, "ro.north@aicte.gov.in")
+    bureau_token = get_token_for_user(client, "bureau@aicte.gov.in")
+    admin_token = get_token_for_user(client, "admin@aicte.gov.in")
+
+    # Regional officer accessing officer endpoint
+    res_ro = client.get("/api/v1/auth/officer-check", headers={"Authorization": f"Bearer {ro_token}"})
+    assert res_ro.status_code == 200
+    assert res_ro.json()["role"] == "REGIONAL_OFFICER"
+
+    # Bureau officer accessing officer endpoint
+    res_bureau = client.get("/api/v1/auth/officer-check", headers={"Authorization": f"Bearer {bureau_token}"})
+    assert res_bureau.status_code == 200
+    assert res_bureau.json()["role"] == "BUREAU_OFFICER"
+
+    # Admin accessing admin endpoint
+    res_admin = client.get("/api/v1/users", headers={"Authorization": f"Bearer {admin_token}"})
+    assert res_admin.status_code == 200
+
+
+def test_password_hash_storage_and_response_sanitization(client: TestClient, db_session: Session):
+    """
+    Security check:
+    1. Database never stores plaintext passwords; bcrypt hashes with $2b$ prefix are used.
+    2. API responses across all endpoints sanitize and omit password hashes.
+    """
+    admin_user = db_session.query(User).filter(User.email == "admin@aicte.gov.in").first()
+    assert admin_user.hashed_password != DEFAULT_DEMO_PASSWORD
+    assert admin_user.hashed_password.startswith("$2b$12$")
+
+    # 1. Login endpoint response check
+    login_res = client.post("/api/auth/login", json={"email": "admin@aicte.gov.in", "password": DEFAULT_DEMO_PASSWORD})
+    login_user = login_res.json()["user"]
+    assert "hashed_password" not in login_user
+    assert "password" not in login_user
+
+    # 2. /me profile endpoint response check
+    admin_token = login_res.json()["access_token"]
+    me_res = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {admin_token}"})
+    me_user = me_res.json()
+    assert "hashed_password" not in me_user
+    assert "password" not in me_user
+
+    # 3. Users list endpoint response check
+    users_res = client.get("/api/v1/users", headers={"Authorization": f"Bearer {admin_token}"})
+    for u in users_res.json():
+        assert "hashed_password" not in u
+        assert "password" not in u
+

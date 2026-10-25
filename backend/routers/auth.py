@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from backend.core.dependencies import get_current_user
+from backend.core.dependencies import get_current_user, require_roles
 from backend.core.security import create_access_token, verify_password
 from backend.database import get_db
-from backend.models.user import User
+from backend.models.user import User, UserRole
 from backend.schemas.auth import LoginRequest, TokenResponse
 from backend.schemas.user import UserResponse
 
@@ -65,4 +65,17 @@ def get_current_user_profile(
     current_user: User = Depends(get_current_user),
 ) -> UserResponse:
     """Return the profile and permissions of the currently authenticated user."""
+    return UserResponse.model_validate(current_user)
+
+
+@router.get(
+    "/officer-check",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Officer-only diagnostic route",
+)
+def officer_diagnostic_check(
+    current_user: User = Depends(require_roles([UserRole.REGIONAL_OFFICER, UserRole.BUREAU_OFFICER])),
+) -> UserResponse:
+    """Restricted route accessible only to Regional and Bureau Officers."""
     return UserResponse.model_validate(current_user)
