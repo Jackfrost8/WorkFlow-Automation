@@ -15,6 +15,8 @@ from backend.routers.applications import router as applications_router
 from backend.routers.evc import router as evc_router
 from backend.routers.documents import router as documents_router
 from backend.routers.undertakings import router as undertakings_router
+from backend.routers.notifications import router as notifications_router
+from backend.background.scheduler import start_scheduler, shutdown_scheduler
 
 settings = get_settings()
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +30,11 @@ async def lifespan(app: FastAPI):
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     # Initialize database tables
     init_db()
+    # Start periodic deadline & SLA escalation background scheduler
+    start_scheduler()
     yield
+    # Clean shutdown of scheduler
+    shutdown_scheduler()
 
 
 app = FastAPI(
@@ -68,6 +74,9 @@ app.include_router(documents_router, prefix="/api")
 
 app.include_router(undertakings_router, prefix=settings.API_V1_PREFIX)
 app.include_router(undertakings_router, prefix="/api")
+
+app.include_router(notifications_router, prefix=settings.API_V1_PREFIX)
+app.include_router(notifications_router, prefix="/api")
 
 # Mount static frontend directory
 if FRONTEND_DIR.exists():

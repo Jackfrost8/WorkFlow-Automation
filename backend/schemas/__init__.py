@@ -37,6 +37,13 @@ from backend.schemas.undertaking import (
     UndertakingRejectRequest,
     UndertakingResponse,
 )
+from backend.schemas.notification import (
+    DeadlineRuleResponse,
+    DeadlineRuleUpdateRequest,
+    EscalationRecordResponse,
+    NotificationMarkReadRequest,
+    NotificationResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -70,4 +77,9 @@ __all__ = [
     "UndertakingVerifyRequest",
     "UndertakingRejectRequest",
     "UndertakingResponse",
+    "NotificationResponse",
+    "NotificationMarkReadRequest",
+    "DeadlineRuleResponse",
+    "DeadlineRuleUpdateRequest",
+    "EscalationRecordResponse",
 ]

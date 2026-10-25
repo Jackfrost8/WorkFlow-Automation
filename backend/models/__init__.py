@@ -25,8 +25,11 @@ from backend.models.document import (
 from backend.models.undertaking import Undertaking, UndertakingStatus
 from backend.models.notification import (
     Notification,
+    NotificationType,
     EscalationRecord,
     EscalationLevel,
+    TrackableEntityType,
+    DeadlineRule,
 )
 from backend.models.audit import AuditLog
 from backend.models.setting import SystemSetting
@@ -53,6 +56,9 @@ __all__ = [
     "Undertaking",
     "UndertakingStatus",
     "Notification",
+    "NotificationType",
+    "TrackableEntityType",
+    "DeadlineRule",
     "EscalationRecord",
     "EscalationLevel",
     "AuditLog",
