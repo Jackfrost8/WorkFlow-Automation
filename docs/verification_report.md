@@ -183,7 +183,46 @@ tests/test_workflow.py::test_transition_on_finalized_application_rejected PASSED
 
 ---
 
-## 9. Remaining Scope for Subsequent Milestones
+## 9. Phase 4 Verification Checklist (Expert Visit Committee Management)
+
+| Requirement | Status | Verification Method | Result |
+| :--- | :--- | :--- | :--- |
+| **EVC Queue Viewing** | PASS | `GET /api/evc` | Role-scoped listing (RO sees region; Institution sees own; Bureau sees all) |
+| **Visit Scheduling** | PASS | `POST /api/evc/{id}/schedule` | Set `scheduled_date`, lead name, members, mode; status &rarr; `SCHEDULED` |
+| **Rescheduling & Tracking** | PASS | `POST /api/evc/{id}/reschedule` | Updated date, incremented `rescheduled_count`, recorded reason |
+| **Visit Completion** | PASS | `POST /api/evc/{id}/complete` | Status &rarr; `COMPLETED`, recorded recommendation & deficiencies |
+| **Due Date & Delayed Filter** | PASS | `due_date` synchronized with SLA | Detected past due visits; filtered with `GET /api/evc?status=DELAYED` |
+| **Automatic Creation on EVC Entry** | PASS | Workflow engine integration | Single visit created on entering EVC stage; no duplicates |
+| **Role & Regional Boundaries** | PASS | Cross-region RO scheduling attempt | Blocked with `HTTP 403 Forbidden`; institution blocked from scheduling |
+| **Audit Integration** | PASS | Cryptographically chained audit logs | Chained hashes for `SCHEDULED`, `RESCHEDULED`, `COMPLETED` |
+
+---
+
+## 10. Total Automated Test Execution Summary (51 Tests)
+
+```
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.7.0
+rootdir: D:\SIH Workflow project
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.14.2
+collected 51 items
+
+tests/test_auth.py (16 tests)                                           PASSED [ 31%]
+tests/test_config.py (3 tests)                                          PASSED [ 37%]
+tests/test_database.py (5 tests)                                        PASSED [ 47%]
+tests/test_evc.py (7 tests)                                             PASSED [ 60%]
+tests/test_health.py (5 tests)                                          PASSED [ 70%]
+tests/test_workflow.py (11 tests)                                       PASSED [ 92%]
+tests/test_workflow_verification.py (4 tests)                           PASSED [100%]
+
+======================== 51 passed, 1 warning in 24.12s =======================
+```
+
+---
+
+## 11. Remaining Scope for Subsequent Milestones
 - **Authentication & RBAC**: Password hashing, JWT token issue/validation, role guards.
 - **Workflow State Machine**: Transitions, approvals, returns, and validations.
 - **EVC Management**: Visit scheduling and report uploads.

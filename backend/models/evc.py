@@ -9,7 +9,7 @@ class EVCStatus(str, enum.Enum):
     PENDING_SCHEDULE = "PENDING_SCHEDULE"
     SCHEDULED = "SCHEDULED"
     CONDUCTED = "CONDUCTED"
-    REPORT_SUBMITTED = "REPORT_SUBMITTED"
+    COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
 
 
@@ -31,7 +31,9 @@ class EVCVisit(Base, TimestampMixin):
     )
     scheduled_date = Column(DateTime, nullable=True)
     conducted_date = Column(DateTime, nullable=True)
+    due_date = Column(DateTime, nullable=True, index=True)
     status = Column(Enum(EVCStatus), default=EVCStatus.PENDING_SCHEDULE, nullable=False, index=True)
+    rescheduled_count = Column(Integer, default=0, nullable=False)
 
     committee_lead_name = Column(String(255), nullable=True)
     committee_members_json = Column(Text, nullable=True)  # JSON-encoded array of member names/affiliations
@@ -46,5 +48,6 @@ class EVCVisit(Base, TimestampMixin):
     )
     deficiencies = Column(Text, nullable=True)
     remarks = Column(Text, nullable=True)
+    officer_remarks = Column(Text, nullable=True)
 
     application = relationship("Application", back_populates="evc_visits")

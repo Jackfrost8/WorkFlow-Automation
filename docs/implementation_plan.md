@@ -27,11 +27,13 @@
   - Strict human decision authority: `DECISION` requires explicit `APPROVE` or `REJECT`.
   - Cryptographically chained audit logging for all application actions.
 
-- [ ] **Milestone 4: EVC Management & Compliance Document Expiry Tracking**
-  - Automatic EVC record creation on transition to inspection stage.
-  - Committee scheduling and inspection report submission.
-  - Document upload with SHA-256 integrity hash and expiry date tracking.
-  - Officer verification and rejection with remarks.
+- [x] **Milestone 4: EVC Management & Compliance Document Expiry Tracking**
+  - Automatic EVC record creation on transition to inspection stage with SLA due-date link.
+  - Inspection queue filtering by status (`PENDING_SCHEDULE`, `SCHEDULED`, `COMPLETED`, `CANCELLED`, `DELAYED`) and region.
+  - Visit scheduling, committee member assignments, and visit mode (`PHYSICAL`/`VIRTUAL`).
+  - Rescheduling engine with justification and reschedule counter.
+  - Inspection completion recording with recommendations and deficiency notes.
+  - Audit logging for all visit lifecycle events (`EVC_VISIT_SCHEDULED`, `EVC_VISIT_RESCHEDULED`, `EVC_VISIT_COMPLETED`, `EVC_VISIT_CANCELLED`).
 
 - [ ] **Milestone 5: APScheduler, Deadline Engine & Non-Duplicating Escalations**
   - Background scheduler polling SLA status against simulated time.

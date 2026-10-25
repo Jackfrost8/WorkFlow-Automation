@@ -12,6 +12,7 @@ from backend.routers.health import router as health_router
 from backend.routers.auth import router as auth_router
 from backend.routers.users import router as users_router
 from backend.routers.applications import router as applications_router
+from backend.routers.evc import router as evc_router
 
 settings = get_settings()
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -56,6 +57,9 @@ app.include_router(auth_router, prefix="/api/auth")  # Required endpoint: POST /
 app.include_router(users_router, prefix=settings.API_V1_PREFIX)
 app.include_router(applications_router, prefix=settings.API_V1_PREFIX)
 app.include_router(applications_router, prefix="/api")  # Required alias for /api/applications
+
+app.include_router(evc_router, prefix=settings.API_V1_PREFIX)
+app.include_router(evc_router, prefix="/api")  # Required alias for /api/evc
 
 # Mount static frontend directory
 if FRONTEND_DIR.exists():

@@ -131,7 +131,62 @@ Returns an application to the previous stage or marks `ACTION_REQUIRED` for defi
 
 ---
 
-## 4. User Management (`/api/v1/users`)
+## 4. Expert Visit Committee (EVC) (`/api/evc` & `/api/v1/evc`)
+
+### `GET /api/evc`
+Lists EVC inspections in queue. Scoped by role:
+- `REGIONAL_OFFICER`: Regional queue only.
+- `BUREAU_OFFICER` & `ADMIN`: All regions with optional `region` query filter.
+- `INSTITUTION`: Own application inspections only.
+- Status filters: `PENDING_SCHEDULE`, `SCHEDULED`, `COMPLETED`, `CANCELLED`, or `DELAYED` (due date elapsed).
+
+### `GET /api/evc/{visit_id}`
+Returns inspection details, committee members, application number, scheduled date, and due date.
+
+### `POST /api/evc/{visit_id}/schedule`
+Schedules committee inspection. Restricted to authorized officers.
+
+**Request Body**:
+```json
+{
+  "scheduled_date": "2026-11-05T10:00:00Z",
+  "committee_lead_name": "Prof. A. K. Sharma",
+  "committee_members": ["Dr. Meena Gupta", "Dr. R. K. Patel"],
+  "visit_mode": "PHYSICAL",
+  "remarks": "Focus on computing laboratories and library books verification"
+}
+```
+
+### `POST /api/evc/{visit_id}/reschedule`
+Reschedules inspection date with mandatory justification. Increments `rescheduled_count`.
+
+**Request Body**:
+```json
+{
+  "new_scheduled_date": "2026-11-10T10:00:00Z",
+  "reason": "Committee lead indisposed due to statutory academic council meeting"
+}
+```
+
+### `POST /api/evc/{visit_id}/complete`
+Records inspection findings, deficiencies, and formal recommendation (`RECOMMENDED`, `DEFICIENCIES_NOTED`, `NOT_RECOMMENDED`).
+
+**Request Body**:
+```json
+{
+  "recommendation": "RECOMMENDED",
+  "deficiencies": null,
+  "remarks": "Campus satisfies faculty ratio and physical infrastructure norms",
+  "report_file_path": "/uploads/evc_report_dtu_2026.pdf"
+}
+```
+
+### `POST /api/evc/{visit_id}/cancel`
+Cancels pending or scheduled inspection with mandatory reason.
+
+---
+
+## 5. User Management (`/api/v1/users`)
 
 - **`GET /api/v1/users`**: List users with optional role and region filters (Admin only).
 - **`POST /api/v1/users`**: Provision a new user account with role assignment (Admin only).

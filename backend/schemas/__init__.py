@@ -18,6 +18,13 @@ from backend.schemas.application import (
     StageHistoryResponse,
     WorkflowStageResponse,
 )
+from backend.schemas.evc import (
+    EVCCancelRequest,
+    EVCCompleteRequest,
+    EVCRescheduleRequest,
+    EVCScheduleRequest,
+    EVCVisitResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -38,4 +45,9 @@ __all__ = [
     "ReturnStageRequest",
     "StageHistoryResponse",
     "WorkflowStageResponse",
+    "EVCCancelRequest",
+    "EVCCompleteRequest",
+    "EVCRescheduleRequest",
+    "EVCScheduleRequest",
+    "EVCVisitResponse",
 ]

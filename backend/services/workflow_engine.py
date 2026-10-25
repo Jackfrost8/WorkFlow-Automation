@@ -98,6 +98,7 @@ def submit_application(
     if first_stage.is_evc_stage:
         evc_visit = EVCVisit(
             application_id=application.id,
+            due_date=stage_deadline,
             status=EVCStatus.PENDING_SCHEDULE,
             visit_mode="PHYSICAL",
         )
@@ -281,6 +282,7 @@ def complete_stage(
             db.add(
                 EVCVisit(
                     application_id=application.id,
+                    due_date=next_deadline,
                     status=EVCStatus.PENDING_SCHEDULE,
                     visit_mode="PHYSICAL",
                 )
