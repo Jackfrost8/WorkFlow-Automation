@@ -19,8 +19,10 @@ from backend.models.evc import EVCVisit, EVCStatus, EVCRecommendation
 from backend.models.document import (
     UndertakingDocument,
     DocType,
+    DocumentStatus,
     VerificationStatus,
 )
+from backend.models.undertaking import Undertaking, UndertakingStatus
 from backend.models.notification import (
     Notification,
     EscalationRecord,
@@ -46,7 +48,10 @@ __all__ = [
     "EVCRecommendation",
     "UndertakingDocument",
     "DocType",
+    "DocumentStatus",
     "VerificationStatus",
+    "Undertaking",
+    "UndertakingStatus",
     "Notification",
     "EscalationRecord",
     "EscalationLevel",

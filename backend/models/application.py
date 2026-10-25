@@ -60,6 +60,9 @@ class Application(Base, TimestampMixin):
     evc_visits = relationship(
         "EVCVisit", back_populates="application", cascade="all, delete-orphan"
     )
+    undertakings = relationship(
+        "Undertaking", back_populates="application", cascade="all, delete-orphan"
+    )
     documents = relationship(
         "UndertakingDocument", back_populates="application", cascade="all, delete-orphan"
     )

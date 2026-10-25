@@ -12,7 +12,14 @@ class DocType(str, enum.Enum):
     AFFIDAVIT_UNDERTAKING = "AFFIDAVIT_UNDERTAKING"
     AICTE_APPROVAL_PREV = "AICTE_APPROVAL_PREV"
     EVC_INSPECTION_REPORT = "EVC_INSPECTION_REPORT"
+    UNDERTAKING_EVIDENCE = "UNDERTAKING_EVIDENCE"
     OTHER = "OTHER"
+
+
+class DocumentStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    EXPIRED = "EXPIRED"
+    ARCHIVED = "ARCHIVED"
 
 
 class VerificationStatus(str, enum.Enum):
@@ -39,8 +46,13 @@ class UndertakingDocument(Base, TimestampMixin):
     stored_file_path = Column(String(500), nullable=False)
     file_size_bytes = Column(Integer, nullable=False)
     file_hash_sha256 = Column(String(64), nullable=False)
+    mime_type = Column(String(100), default="application/pdf", nullable=False)
 
+    issue_date = Column(DateTime, nullable=True)
     expiry_date = Column(DateTime, nullable=True, index=True)
+    status = Column(
+        Enum(DocumentStatus), default=DocumentStatus.ACTIVE, nullable=False, index=True
+    )
     verification_status = Column(
         Enum(VerificationStatus), default=VerificationStatus.PENDING, nullable=False, index=True
     )
@@ -49,7 +61,11 @@ class UndertakingDocument(Base, TimestampMixin):
     )
     verified_at = Column(DateTime, nullable=True)
     verification_remarks = Column(Text, nullable=True)
+    uploaded_by_user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
 
     institution = relationship("Institution", back_populates="documents")
     application = relationship("Application", back_populates="documents")
     verified_by = relationship("User", foreign_keys=[verified_by_user_id])
+    uploaded_by = relationship("User", foreign_keys=[uploaded_by_user_id])

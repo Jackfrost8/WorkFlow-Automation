@@ -25,6 +25,18 @@ from backend.schemas.evc import (
     EVCScheduleRequest,
     EVCVisitResponse,
 )
+from backend.schemas.document import (
+    DocumentResponse,
+    DocumentVerifyRequest,
+    DocumentUpdateRequest,
+)
+from backend.schemas.undertaking import (
+    UndertakingCreateRequest,
+    UndertakingSubmitEvidenceRequest,
+    UndertakingVerifyRequest,
+    UndertakingRejectRequest,
+    UndertakingResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -50,4 +62,12 @@ __all__ = [
     "EVCRescheduleRequest",
     "EVCScheduleRequest",
     "EVCVisitResponse",
+    "DocumentResponse",
+    "DocumentVerifyRequest",
+    "DocumentUpdateRequest",
+    "UndertakingCreateRequest",
+    "UndertakingSubmitEvidenceRequest",
+    "UndertakingVerifyRequest",
+    "UndertakingRejectRequest",
+    "UndertakingResponse",
 ]
