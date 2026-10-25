@@ -1,0 +1,87 @@
+import os
+from contextlib import asynccontextmanager
+from pathlib import Path
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+from backend.config import get_settings
+from backend.database import init_db
+from backend.routers.health import router as health_router
+
+settings = get_settings()
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan context manager for startup and shutdown hooks."""
+    # Ensure upload directory exists
+    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+    # Initialize database tables
+    init_db()
+    yield
+
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version="1.0.0",
+    description="AICTE Institutional Approval Workflow Automation Platform",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    lifespan=lifespan,
+)
+
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# API Routers
+app.include_router(health_router, prefix=settings.API_V1_PREFIX)
+app.include_router(health_router, prefix="/api")  # Top-level convenience route for /api/health
+
+# Mount static frontend directory
+if FRONTEND_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+
+
+# Direct Frontend Page Routes
+@app.get("/", include_in_schema=False)
+async def serve_index():
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"message": f"Welcome to {settings.APP_NAME} API"}
+
+
+@app.get("/login", include_in_schema=False)
+async def serve_login():
+    login_file = FRONTEND_DIR / "login.html"
+    if login_file.exists():
+        return FileResponse(login_file)
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/institution", include_in_schema=False)
+async def serve_institution():
+    file = FRONTEND_DIR / "institution.html"
+    return FileResponse(file) if file.exists() else FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/officer", include_in_schema=False)
+async def serve_officer():
+    file = FRONTEND_DIR / "officer.html"
+    return FileResponse(file) if file.exists() else FileResponse(FRONTEND_DIR / "index.html")
+
+
+@app.get("/admin", include_in_schema=False)
+async def serve_admin():
+    file = FRONTEND_DIR / "admin.html"
+    return FileResponse(file) if file.exists() else FileResponse(FRONTEND_DIR / "index.html")

@@ -1,0 +1,40 @@
+/* AICTE Workflow Automation Platform Styles */
+
+:root {
+  --aicte-navy: #003366;
+  --aicte-saffron: #ff9933;
+  --aicte-green: #138808;
+  --aicte-blue: #1e3a8a;
+  --bg-slate: #f8fafc;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-slate);
+  color: #1e293b;
+}
+
+.gradient-header {
+  background: linear-gradient(135deg, #002b5b 0%, #004080 50%, #0056b3 100%);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-healthy {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-overdue {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
