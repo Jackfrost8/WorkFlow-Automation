@@ -411,6 +411,19 @@ def check_all_deadlines(
                     )
                     if created:
                         summary["reminders_created"] += 1
+                        log_audit_event(
+                            db=db,
+                            action="DEADLINE_REMINDER",
+                            resource_type=rule.entity_type.value,
+                            resource_id=str(item.entity_id),
+                            user_id=user.id,
+                            details={
+                                "diff_days": diff_days,
+                                "due_date": due_date_str,
+                                "recipient_id": user.id,
+                                "event_key": event_key,
+                            },
+                        )
                     if attempted:
                         summary["emails_attempted"] += 1
                     if sent:
@@ -447,6 +460,19 @@ def check_all_deadlines(
                     )
                     if created:
                         summary["overdue_created"] += 1
+                        log_audit_event(
+                            db=db,
+                            action="DEADLINE_OVERDUE",
+                            resource_type=rule.entity_type.value,
+                            resource_id=str(item.entity_id),
+                            user_id=user.id,
+                            details={
+                                "lapsed_days": lapsed_days,
+                                "due_date": due_date_str,
+                                "recipient_id": user.id,
+                                "event_key": event_key,
+                            },
+                        )
                     if attempted:
                         summary["emails_attempted"] += 1
                     if sent:

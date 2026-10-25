@@ -7,6 +7,7 @@ from backend.database import get_db
 from backend.models.user import User, UserRole
 from backend.schemas.auth import LoginRequest, TokenResponse
 from backend.schemas.user import UserResponse
+from backend.services.audit_service import log_audit_event
 
 router = APIRouter(prefix="", tags=["Authentication"])
 
@@ -27,6 +28,15 @@ def login(
     """
     user = db.query(User).filter(User.email == payload.email.lower().strip()).first()
     if not user or not verify_password(payload.password, user.hashed_password):
+        log_audit_event(
+            db=db,
+            action="LOGIN_FAILED",
+            resource_type="AUTH",
+            resource_id=str(user.id) if user else None,
+            user_id=user.id if user else None,
+            details={"email": payload.email.lower().strip(), "reason": "Invalid credentials"},
+        )
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -34,11 +44,30 @@ def login(
         )
 
     if not user.is_active:
+        log_audit_event(
+            db=db,
+            action="LOGIN_FAILED",
+            resource_type="AUTH",
+            resource_id=str(user.id),
+            user_id=user.id,
+            details={"email": user.email, "reason": "Account is inactive"},
+        )
+        db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Account is inactive. Contact the system administrator.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    log_audit_event(
+        db=db,
+        action="LOGIN_SUCCESS",
+        resource_type="AUTH",
+        resource_id=str(user.id),
+        user_id=user.id,
+        details={"email": user.email, "role": user.role.value},
+    )
+    db.commit()
 
     token = create_access_token(
         data={

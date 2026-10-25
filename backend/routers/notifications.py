@@ -20,6 +20,7 @@ from backend.schemas.notification import (
     NotificationMarkReadRequest,
     NotificationResponse,
 )
+from backend.services.audit_service import log_audit_event
 from backend.services.deadline_service import check_all_deadlines, ensure_default_deadline_rules
 
 router = APIRouter(prefix="/notifications", tags=["Notifications & Escalations"])
@@ -169,16 +170,41 @@ def update_deadline_rule(
             detail="Deadline rule not found.",
         )
 
+    changes = {}
     if payload.reminder_threshold_days is not None:
+        changes["reminder_threshold_days"] = {
+            "old": rule.reminder_threshold_days,
+            "new": payload.reminder_threshold_days,
+        }
         rule.reminder_threshold_days = payload.reminder_threshold_days
     if payload.escalation_threshold_days is not None:
+        changes["escalation_threshold_days"] = {
+            "old": rule.escalation_threshold_days,
+            "new": payload.escalation_threshold_days,
+        }
         rule.escalation_threshold_days = payload.escalation_threshold_days
     if payload.escalation_recipient_role is not None:
+        changes["escalation_recipient_role"] = {
+            "old": rule.escalation_recipient_role.value if rule.escalation_recipient_role else None,
+            "new": payload.escalation_recipient_role.value if payload.escalation_recipient_role else None,
+        }
         rule.escalation_recipient_role = payload.escalation_recipient_role
     if payload.is_active is not None:
+        changes["is_active"] = {"old": rule.is_active, "new": payload.is_active}
         rule.is_active = payload.is_active
     if payload.description is not None:
+        changes["description"] = {"old": rule.description, "new": payload.description}
         rule.description = payload.description
+
+    if changes:
+        log_audit_event(
+            db=db,
+            action="DEADLINE_RULE_UPDATED",
+            resource_type="DEADLINE_RULE",
+            resource_id=str(rule.id),
+            user_id=current_user.id,
+            details={"rule_id": rule.id, "entity_type": rule.entity_type.value, "changes": changes},
+        )
 
     db.commit()
     db.refresh(rule)

@@ -9,6 +9,7 @@ from backend.models.user import Institution, User, UserRole
 from backend.schemas.auth import UserUpdate
 from backend.schemas.common import MessageResponse
 from backend.schemas.user import UserCreate, UserResponse
+from backend.services.audit_service import log_audit_event
 
 router = APIRouter(prefix="/users", tags=["User Management"])
 
@@ -46,7 +47,7 @@ def list_users(
 def create_user(
     payload: UserCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles([UserRole.ADMIN])),
+    current_user: User = Depends(require_roles([UserRole.ADMIN])),
 ) -> UserResponse:
     """Admin-only endpoint to provision a new user account."""
     existing = db.query(User).filter(User.email == payload.email.lower().strip()).first()
@@ -80,6 +81,21 @@ def create_user(
         is_active=True,
     )
     db.add(new_user)
+    db.flush()
+
+    log_audit_event(
+        db=db,
+        action="USER_CREATED",
+        resource_type="USER",
+        resource_id=str(new_user.id),
+        user_id=current_user.id,
+        details={
+            "email": new_user.email,
+            "role": new_user.role.value,
+            "region": new_user.region if new_user.region else None,
+            "institution_id": new_user.institution_id,
+        },
+    )
     db.commit()
     db.refresh(new_user)
 
@@ -157,6 +173,7 @@ def update_user(
             detail="User not found",
         )
 
+    changes = {}
     if payload.email is not None:
         normalized_email = payload.email.lower().strip()
         if normalized_email != target_user.email:
@@ -166,23 +183,46 @@ def update_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Email '{payload.email}' is already in use",
                 )
+            changes["email"] = {"old": target_user.email, "new": normalized_email}
             target_user.email = normalized_email
 
-    if payload.full_name is not None:
+    if payload.full_name is not None and payload.full_name.strip() != target_user.full_name:
+        changes["full_name"] = {"old": target_user.full_name, "new": payload.full_name.strip()}
         target_user.full_name = payload.full_name.strip()
 
     if payload.password is not None:
         target_user.hashed_password = hash_password(payload.password)
+        changes["password"] = "[UPDATED]"
 
+    role_changed = False
     if is_admin:
-        if payload.role is not None:
+        if payload.role is not None and payload.role != target_user.role:
+            changes["role"] = {"old": target_user.role.value, "new": payload.role.value}
             target_user.role = payload.role
-        if payload.region is not None:
+            role_changed = True
+        if payload.region is not None and payload.region != target_user.region:
+            changes["region"] = {
+                "old": target_user.region.value if target_user.region else None,
+                "new": payload.region.value if payload.region else None,
+            }
             target_user.region = payload.region
-        if payload.institution_id is not None:
+        if payload.institution_id is not None and payload.institution_id != target_user.institution_id:
+            changes["institution_id"] = {"old": target_user.institution_id, "new": payload.institution_id}
             target_user.institution_id = payload.institution_id
-        if payload.is_active is not None:
+        if payload.is_active is not None and payload.is_active != target_user.is_active:
+            changes["is_active"] = {"old": target_user.is_active, "new": payload.is_active}
             target_user.is_active = payload.is_active
+
+    if changes:
+        action_name = "USER_ROLE_CHANGED" if role_changed else "USER_UPDATED"
+        log_audit_event(
+            db=db,
+            action=action_name,
+            resource_type="USER",
+            resource_id=str(target_user.id),
+            user_id=current_user.id,
+            details={"changes": changes},
+        )
 
     db.commit()
     db.refresh(target_user)
@@ -198,7 +238,7 @@ def update_user(
 def deactivate_user(
     user_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles([UserRole.ADMIN])),
+    current_user: User = Depends(require_roles([UserRole.ADMIN])),
 ) -> MessageResponse:
     """Admin-only endpoint to soft-delete / deactivate a user."""
     target_user = db.query(User).filter(User.id == user_id).first()
@@ -209,6 +249,14 @@ def deactivate_user(
         )
 
     target_user.is_active = False
+    log_audit_event(
+        db=db,
+        action="USER_DEACTIVATED",
+        resource_type="USER",
+        resource_id=str(target_user.id),
+        user_id=current_user.id,
+        details={"email": target_user.email},
+    )
     db.commit()
 
     return MessageResponse(message=f"User '{target_user.email}' has been deactivated successfully.")

@@ -3,7 +3,7 @@ Centralized demo time simulation service.
 Calculates effective business time based on real UTC clock and persistent database offset.
 When ENABLE_TIME_SIMULATION is False (e.g. production), always returns real UTC time.
 """
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
 from fastapi import HTTPException, status
@@ -57,6 +57,11 @@ def get_effective_time(db: Optional[Session] = None) -> datetime:
     if offset == 0.0:
         return real_now
     return real_now + timedelta(seconds=offset)
+
+
+def get_effective_date(db: Optional[Session] = None) -> date:
+    """Get current effective business date."""
+    return get_effective_time(db).date()
 
 
 def get_simulated_time_status(db: Optional[Session] = None) -> Dict[str, Any]:
