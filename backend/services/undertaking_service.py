@@ -203,6 +203,11 @@ def submit_evidence(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Specified proof document not found or does not belong to your institution.",
             )
+        if doc.application_id is not None and doc.application_id != undertaking.application_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Specified proof document is linked to a different application.",
+            )
 
     now_utc = datetime.now(timezone.utc)
     prev_status = undertaking.status.value

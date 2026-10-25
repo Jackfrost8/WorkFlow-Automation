@@ -10,6 +10,7 @@ from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from backend.config import get_settings
+from backend.models.application import Application
 from backend.models.document import DocType, DocumentStatus, UndertakingDocument, VerificationStatus
 from backend.models.user import Institution, User, UserRole
 from backend.services.audit_service import log_audit_event
@@ -131,6 +132,20 @@ async def save_uploaded_file(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Cannot upload document for an institution outside your region ({user.region}).",
         )
+
+    # Validate application reference consistency
+    if application_id is not None:
+        app_record = db.query(Application).filter(Application.id == application_id).first()
+        if not app_record:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Referenced application not found.",
+            )
+        if app_record.institution_id != target_institution_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Referenced application does not belong to the target institution.",
+            )
 
     # Validate dates
     if issue_date and expiry_date:
