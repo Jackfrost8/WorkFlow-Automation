@@ -87,3 +87,9 @@ def shutdown_scheduler() -> None:
             logger.info("APScheduler stopped cleanly.")
         _is_running = False
         _scheduler = None
+
+
+def get_scheduler_instance() -> Optional[BackgroundScheduler]:
+    """Retrieve the active BackgroundScheduler instance if running."""
+    global _scheduler
+    return _scheduler
