@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from backend.core.security import hash_password
 from backend.database import SessionLocal, init_db
 from backend.models.user import Institution, User, UserRole
+from backend.workflow.config import ensure_default_workflow_routes
 
 DEFAULT_DEMO_PASSWORD = "Demo@AICTE2026!"
 
@@ -139,12 +140,16 @@ def seed_demo_data(
 
         session.commit()
 
+        # 3. Seed Default Workflow Routes
+        routes_map = ensure_default_workflow_routes(session)
+
         if verbose:
             print("\n=======================================================")
             print("  AICTE Workflow Platform - Demo Data Seed Summary")
             print("=======================================================")
             print(f"Institutions Seeded/Updated : {len(DEMO_INSTITUTIONS)}")
             print(f"Users Seeded/Updated        : {len(DEMO_USERS)}")
+            print(f"Workflow Routes Configured  : {len(routes_map)}")
             print(f"Standard Demo Password      : {DEFAULT_DEMO_PASSWORD}")
             print("-------------------------------------------------------")
             print(f"{'Role':<18} {'Email':<25} {'Region / Link'}")

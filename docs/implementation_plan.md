@@ -18,10 +18,14 @@
   - Frontend login page with 1-click credential filling and role-based redirects.
   - Frontend protected page route guards and logout behavior.
 
-- [ ] **Milestone 3: Configurable Workflow Engine & State Machine**
-  - Application submission by institutions.
+- [x] **Milestone 3: Configurable Workflow Engine & State Machine**
+  - Configured 4 initial routes: `ONLY_SCRUTINY`, `SCRUTINY_EVC`, `EVC_SAC`, `ONLY_EVC`.
+  - Application submission by institutions with unique format `AICTE/{year}/{region}/{id}`.
+  - Automatic initial stage assignment and SLA deadline calculation.
   - Route transition verification, forward/return operations with mandatory remarks.
-  - Prevention of unauthorized or out-of-sequence transitions.
+  - Automatic `EVCVisit` record creation upon entering EVC inspection stage.
+  - Strict human decision authority: `DECISION` requires explicit `APPROVE` or `REJECT`.
+  - Cryptographically chained audit logging for all application actions.
 
 - [ ] **Milestone 4: EVC Management & Compliance Document Expiry Tracking**
   - Automatic EVC record creation on transition to inspection stage.

@@ -59,7 +59,79 @@ Returns the profile of the authenticated user. Requires `Authorization: Bearer <
 
 ---
 
-## 3. User Management (`/api/v1/users`)
+## 3. Applications & Workflow (`/api/applications` & `/api/v1/applications`)
+
+### `POST /api/applications`
+Submits a new institutional approval application. Restricted to `INSTITUTION` (or `ADMIN`).
+
+**Request Body**:
+```json
+{
+  "route_type": "SCRUTINY_EVC",
+  "title": "Technical Campus Expansion Proposal",
+  "description": "Addition of Artificial Intelligence and Data Science department",
+  "academic_year": "2026-2027"
+}
+```
+
+**Response**:
+`201 Created`
+```json
+{
+  "id": 1,
+  "application_number": "AICTE/2026/NORTH/00001",
+  "institution_id": 1,
+  "route_type": "SCRUTINY_EVC",
+  "status": "SUBMITTED",
+  "current_stage": {
+    "id": 3,
+    "stage_key": "SCRUTINY",
+    "name": "Scrutiny Committee Review",
+    "order_index": 1,
+    "sla_days": 7,
+    "is_evc_stage": false,
+    "is_final": false
+  },
+  "current_stage_deadline": "2026-11-01T05:58:28.000Z",
+  "stage_history": [
+    {
+      "id": 1,
+      "stage_id": 3,
+      "action": "SUBMIT",
+      "remarks": "Application submitted by institution",
+      "entered_at": "2026-10-25T05:58:28.000Z"
+    }
+  ]
+}
+```
+
+### `GET /api/applications`
+Lists applications with role-based scoping:
+- `INSTITUTION`: Own institution's applications only.
+- `REGIONAL_OFFICER`: Applications belonging to assigned region.
+- `BUREAU_OFFICER` & `ADMIN`: Authorized cross-region monitoring across all regions.
+
+### `GET /api/applications/{id}`
+Returns application details, active stage, and complete stage history. Subject to ownership and regional access boundaries.
+
+### `POST /api/applications/{id}/complete-stage`
+Advances an application to the next valid stage, or records final approval/rejection decision. Restricted to authorized officers (`REGIONAL_OFFICER`, `BUREAU_OFFICER`, `ADMIN`).
+
+**Request Body**:
+```json
+{
+  "remarks": "All documents verified in accordance with AICTE Approval Process Handbook",
+  "decision": "APPROVE",
+  "expected_stage_id": 5
+}
+```
+
+### `POST /api/applications/{id}/return`
+Returns an application to the previous stage or marks `ACTION_REQUIRED` for deficiencies. Requires substantive `reason` (minimum 3 characters).
+
+---
+
+## 4. User Management (`/api/v1/users`)
 
 - **`GET /api/v1/users`**: List users with optional role and region filters (Admin only).
 - **`POST /api/v1/users`**: Provision a new user account with role assignment (Admin only).

@@ -131,7 +131,59 @@ tests/test_static_css_and_js_delivery PASSED                              [100%]
 
 ---
 
-## 7. Remaining Scope for Subsequent Milestones
+## 7. Phase 3 Verification Checklist (Applications & Workflow Engine)
+
+| Requirement | Status | Verification Method | Result |
+| :--- | :--- | :--- | :--- |
+| **Configurable Routes (4 Initial)** | PASS | `ONLY_SCRUTINY`, `SCRUTINY_EVC`, `EVC_SAC`, `ONLY_EVC` in `backend/workflow/config.py` | All 4 routes configured with stages and transitions |
+| **Application Submission** | PASS | `POST /api/applications` | Generated unique ID `AICTE/year/region/00001`, assigned stage 1 & SLA |
+| **Initial Stage History** | PASS | Initial `ApplicationStageHistory` record created on submit | `action="SUBMIT"`, `entered_at`, and deadline tracked |
+| **Valid Stage Transitions** | PASS | `POST /api/applications/{id}/complete-stage` | Stage advanced, old history closed, new history created |
+| **Invalid Stage Transitions** | PASS | Transitioning finalized application or stage mismatch | Rejected with `400 Bad Request` or `409 Conflict` |
+| **Return Without Reason** | PASS | `POST /api/applications/{id}/return` with empty reason | Rejected with `422 Unprocessable Content` |
+| **Return With Reason** | PASS | `POST /api/applications/{id}/return` with substantive reason | Moved back to prior stage, set status `ACTION_REQUIRED` |
+| **Institution Ownership Isolation** | PASS | Institution A viewing Institution B's application | Rejected with `403 Forbidden`; list scoped to own institution |
+| **Regional Boundary Enforcement** | PASS | RO North processing RO West application | Blocked with `403 Forbidden` (`detail: outside jurisdiction`) |
+| **Bureau Cross-Region Access** | PASS | Bureau Officer inspecting all regions | Successfully accessed applications across all regions |
+| **EVC Record Creation** | PASS | Transitioning into EVC stage (direct or via scrutiny) | Automatically created `EVCVisit` record (`PENDING_SCHEDULE`) |
+| **Final Decision Permissions** | PASS | Officer approving with decision parameter | Final status `APPROVED`, officer recorded; institution blocked |
+| **Audit Integration** | PASS | SHA-256 hash chaining on all workflow events | Verified chain: `APPLICATION_SUBMITTED`, `STAGE_COMPLETED`, etc. |
+
+---
+
+## 8. Total Automated Test Execution Summary (40 Tests)
+
+```
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.7.0
+rootdir: D:\SIH Workflow project
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.14.2
+collected 40 items
+
+tests/test_auth.py (16 tests)                                           PASSED [ 40%]
+tests/test_config.py (3 tests)                                          PASSED [ 47%]
+tests/test_database.py (5 tests)                                        PASSED [ 60%]
+tests/test_health.py (5 tests)                                          PASSED [ 72%]
+tests/test_workflow.py::test_submit_application_all_four_routes PASSED   [ 75%]
+tests/test_workflow.py::test_evc_record_created_on_entering_evc_stage PASSED [ 77%]
+tests/test_workflow.py::test_valid_stage_transitions_end_to_end_only_scrutiny PASSED [ 80%]
+tests/test_workflow.py::test_final_decision_requires_explicit_decision PASSED [ 82%]
+tests/test_workflow.py::test_return_application_without_reason_rejected PASSED [ 85%]
+tests/test_workflow.py::test_return_application_moves_stage_and_sets_action_required PASSED [ 87%]
+tests/test_workflow.py::test_institution_ownership_isolation PASSED      [ 90%]
+tests/test_workflow.py::test_regional_officer_boundary_enforcement PASSED [ 92%]
+tests/test_workflow.py::test_bureau_officer_cross_region_monitoring PASSED [ 95%]
+tests/test_workflow.py::test_repeated_or_concurrent_transition_rejected PASSED [ 97%]
+tests/test_workflow.py::test_transition_on_finalized_application_rejected PASSED [100%]
+
+======================== 40 passed, 3 warnings in 22.32s =======================
+```
+
+---
+
+## 9. Remaining Scope for Subsequent Milestones
 - **Authentication & RBAC**: Password hashing, JWT token issue/validation, role guards.
 - **Workflow State Machine**: Transitions, approvals, returns, and validations.
 - **EVC Management**: Visit scheduling and report uploads.

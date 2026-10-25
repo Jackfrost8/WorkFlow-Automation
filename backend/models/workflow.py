@@ -25,9 +25,10 @@ class WorkflowRoute(Base, TimestampMixin):
     __tablename__ = "workflow_routes"
 
     id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
     application_type_id = Column(
-        Integer, ForeignKey("application_types.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("application_types.id", ondelete="CASCADE"), nullable=True
     )
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
@@ -35,6 +36,7 @@ class WorkflowRoute(Base, TimestampMixin):
     application_type = relationship("ApplicationType", back_populates="routes")
     stages = relationship("WorkflowStage", back_populates="route", order_by="WorkflowStage.order_index")
     transitions = relationship("StageTransition", back_populates="route")
+    applications = relationship("Application", back_populates="route")
 
 
 class WorkflowStage(Base, TimestampMixin):

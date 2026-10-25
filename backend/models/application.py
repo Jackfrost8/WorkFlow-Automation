@@ -26,8 +26,12 @@ class Application(Base, TimestampMixin):
         Integer, ForeignKey("institutions.id", ondelete="CASCADE"), nullable=False, index=True
     )
     application_type_id = Column(
-        Integer, ForeignKey("application_types.id", ondelete="RESTRICT"), nullable=False
+        Integer, ForeignKey("application_types.id", ondelete="RESTRICT"), nullable=True
     )
+    route_id = Column(
+        Integer, ForeignKey("workflow_routes.id", ondelete="RESTRICT"), nullable=True, index=True
+    )
+    route_type = Column(String(50), nullable=True, index=True)
     current_stage_id = Column(
         Integer, ForeignKey("workflow_stages.id", ondelete="SET NULL"), nullable=True
     )
@@ -47,7 +51,8 @@ class Application(Base, TimestampMixin):
 
     institution = relationship("Institution", back_populates="applications")
     application_type = relationship("ApplicationType", back_populates="applications")
-    current_stage = relationship("WorkflowStage")
+    route = relationship("WorkflowRoute", back_populates="applications")
+    current_stage = relationship("WorkflowStage", foreign_keys=[current_stage_id])
     final_decision_by = relationship("User", foreign_keys=[final_decision_by_user_id])
     stage_history = relationship(
         "ApplicationStageHistory", back_populates="application", cascade="all, delete-orphan"
@@ -75,6 +80,9 @@ class ApplicationStageHistory(Base, TimestampMixin):
     application_id = Column(
         Integer, ForeignKey("applications.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    stage_id = Column(
+        Integer, ForeignKey("workflow_stages.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     from_stage_id = Column(
         Integer, ForeignKey("workflow_stages.id", ondelete="SET NULL"), nullable=True
     )
@@ -92,6 +100,8 @@ class ApplicationStageHistory(Base, TimestampMixin):
     was_overdue = Column(Boolean, default=False, nullable=False)
 
     application = relationship("Application", back_populates="stage_history")
+    stage = relationship("WorkflowStage", foreign_keys=[stage_id])
     from_stage = relationship("WorkflowStage", foreign_keys=[from_stage_id])
     to_stage = relationship("WorkflowStage", foreign_keys=[to_stage_id])
     actor = relationship("User", foreign_keys=[actor_user_id])
+    responsible_officer = relationship("User", foreign_keys=[actor_user_id], overlaps="actor")

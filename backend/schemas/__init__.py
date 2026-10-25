@@ -10,6 +10,14 @@ from backend.schemas.institution import (
 )
 from backend.schemas.user import UserBase, UserCreate, UserResponse
 from backend.schemas.auth import LoginRequest, TokenResponse, UserUpdate
+from backend.schemas.application import (
+    ApplicationCreate,
+    ApplicationResponse,
+    CompleteStageRequest,
+    ReturnStageRequest,
+    StageHistoryResponse,
+    WorkflowStageResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -24,4 +32,10 @@ __all__ = [
     "LoginRequest",
     "TokenResponse",
     "UserUpdate",
+    "ApplicationCreate",
+    "ApplicationResponse",
+    "CompleteStageRequest",
+    "ReturnStageRequest",
+    "StageHistoryResponse",
+    "WorkflowStageResponse",
 ]
