@@ -60,7 +60,7 @@ def create_user(
     if payload.role == UserRole.INSTITUTION:
         if not payload.institution_id:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="institution_id is mandatory for users with INSTITUTION role",
             )
         institution = db.query(Institution).filter(Institution.id == payload.institution_id).first()

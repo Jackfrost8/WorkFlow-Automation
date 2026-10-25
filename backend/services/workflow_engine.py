@@ -196,7 +196,7 @@ def complete_stage(
     if curr_stage.is_final:
         if not decision or decision.upper() not in ["APPROVE", "REJECT"]:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="Final decision requires an explicit decision parameter: 'APPROVE' or 'REJECT'",
             )
 
@@ -317,7 +317,7 @@ def return_application(
     """
     if not reason or len(reason.strip()) < 3:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="A substantive return reason (minimum 3 characters) is required",
         )
 
